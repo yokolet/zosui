@@ -1,11 +1,5 @@
 package zosui.nodes;
 
-import zosui.helper.Validate;
-import zosui.internal.QuietAppendable;
-import zosui.internal.StringUtil;
-import zosui.parser.ParseSettings;
-import zosui.select.NodeFilter;
-import zosui.select.NodeVisitor;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -18,12 +12,18 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import zosui.helper.Validate;
+import zosui.internal.QuietAppendable;
+import zosui.internal.StringUtil;
+import zosui.parser.ParseSettings;
+import zosui.select.NodeFilter;
+import zosui.select.NodeVisitor;
 /**
  The base, abstract Node model. {@link Element}, {@link Document}, {@link Comment}, {@link TextNode}, et al.,
  are instances of Node.
 
  @author Jonathan Hedley, jonathan@hedley.net */
-public abstract class Node implements Cloneable {
+public abstract class Node implements org.w3c.dom.Node, Cloneable {
     static final List<Node> EmptyNodes = Collections.emptyList();
     static final String EmptyString = "";
     @Nullable Element parentNode; // Nodes don't always have parents
