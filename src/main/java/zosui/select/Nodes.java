@@ -26,7 +26,7 @@ import java.util.function.UnaryOperator;
  //@see Element#selectNodes(String)
  //@see Element#selectNodes(String, Class)
  @since 1.21.1 */
-public class Nodes<T extends Node> extends ArrayList<T> {
+public class Nodes<T extends Node> extends ArrayList<T> implements org.w3c.dom.NodeList {
     public Nodes() {
     }
 
@@ -45,6 +45,16 @@ public class Nodes<T extends Node> extends ArrayList<T> {
     @SafeVarargs
     public Nodes(T... nodes) {
         super(Arrays.asList(nodes));
+    }
+
+    @Override
+    public org.w3c.dom.Node item(int index) {
+        return super.get(index);
+    }
+
+    @Override
+    public int getLength() {
+        return super.size();
     }
 
     /**

@@ -1,6 +1,10 @@
 package zosui.nodes;
 
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.UserDataHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +21,9 @@ import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
 import zosui.parser.ParseSettings;
 import zosui.select.NodeFilter;
+import zosui.select.Nodes;
 import zosui.select.NodeVisitor;
+
 /**
  The base, abstract Node model. {@link Element}, {@link Document}, {@link Comment}, {@link TextNode}, et al.,
  are instances of Node.
@@ -34,6 +40,60 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
      */
     protected Node() {
     }
+
+    // org.w3c.dom.Node methods
+    public abstract String getNodeName();
+    @Override public String getNodeValue() throws DOMException { return ""; }
+    @Override public void setNodeValue(String value) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    public abstract short getNodeType();
+    @Override public Node getParentNode() { return parentNode(); }
+    @Override public NodeList getChildNodes() {
+        List<Node> children = childNodes();
+        return new Nodes<>(children);
+    }
+    public abstract Node getFirstChild();
+    public abstract Node getLastChild();
+    @Override public Node getPreviousSibling() { return previousSibling(); }
+    @Override public Node getNextSibling() { return nextSibling(); }
+    public abstract NamedNodeMap getAttributes();
+    @Override public org.w3c.dom.Document getOwnerDocument() { return ownerDocument(); }
+    @Override public Node insertBefore(org.w3c.dom.Node newChild, org.w3c.dom.Node refChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Node replaceChild(org.w3c.dom.Node newChild, org.w3c.dom.Node oldChild) throws DOMException {
+        // should call replaceChildInner(Node out, Node in)
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Node removeChild(org.w3c.dom.Node oldChild) throws DOMException {
+        // should call removeChildInner(Node out)
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Node appendChild(org.w3c.dom.Node newChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    public abstract boolean hasChildNodes();
+    public abstract Node cloneNode();
+    public abstract void normalize();
+    public abstract boolean isSupported(String feature, String version);
+    public abstract String getNamespaceURI();
+    public abstract String getPrefix();
+    public abstract void setPrefix(String prefix) throws DOMException;
+    public abstract String getLocalName();
+    //public abstract boolean hasAttributes(); // this Node impl has the exactly same method.
+    public abstract String getBaseURI();
+    public abstract short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException;
+    public abstract String getTextContent() throws DOMException;
+    public abstract void setTextContent(String textContent) throws DOMException;
+    public abstract boolean isSameNode(org.w3c.dom.Node other);
+    public abstract String lookupPrefix(String namespaceURI);
+    public abstract boolean isDefaultNamespace(String namespaceURI);
+    public abstract String lookupNamespaceURI(String prefix);
+    public abstract boolean isEqualNode(org.w3c.dom.Node arg);
+    public abstract Object getFeature(String feature, String version);
+    public abstract Object setUserData(String key, Object data, UserDataHandler handler);
+    public abstract Object getUserData(String key);
 
     /**
      Get the node name of this node. Use for debugging purposes and not logic switching (for that, use instanceof).
@@ -95,7 +155,8 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     /**
      * Check if this Node has an actual Attributes object.
      */
-    protected abstract boolean hasAttributes();
+    // org.w3c.dom.Node has the exactly same method.
+    public abstract boolean hasAttributes();
 
     /**
      Checks if this node has a parent. Nodes won't have parents if (e.g.) they are newly created and not added as a child
@@ -380,7 +441,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
      */
     public void remove() {
         if (parentNode != null)
-            parentNode.removeChild(this);
+            parentNode.removeChildInner(this);
     }
 
     /**
@@ -471,7 +532,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
         Element wrap = (Element) wrapNode;
         Element deepest = getDeepChild(wrap);
         if (parentNode != null)
-            parentNode.replaceChild(this, wrap);
+            parentNode.replaceChildInner(this, wrap);
         deepest.addChildren(this); // side effect of tricking wrapChildren to lose first
 
         // remainder (unbalanced wrap, like <div></div><p></p> -- The <p> is remainder
@@ -484,7 +545,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
                     continue;
 
                 if (remainder.parentNode != null)
-                    remainder.parentNode.removeChild(remainder);
+                    remainder.parentNode.removeChildInner(remainder);
                 wrap.after(remainder);
             }
         }
@@ -532,24 +593,24 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
         Validate.notNull(in);
         if (parentNode == null) parentNode = in.parentNode; // allows old to have been temp removed before replacing
         Validate.notNull(parentNode);
-        parentNode.replaceChild(this, in);
+        parentNode.replaceChildInner(this, in);
     }
 
     protected void setParentNode(Node parentNode) {
         Validate.notNull(parentNode);
         if (this.parentNode != null)
-            this.parentNode.removeChild(this);
+            this.parentNode.removeChildInner(this);
         assert parentNode instanceof Element;
         this.parentNode = (Element) parentNode;
     }
 
-    protected void replaceChild(Node out, Node in) {
+    protected void replaceChildInner(Node out, Node in) {
         Validate.isTrue(out.parentNode == this);
         Validate.notNull(in);
         if (out == in) return; // no-op self replacement
 
         if (in.parentNode != null)
-            in.parentNode.removeChild(in);
+            in.parentNode.removeChildInner(in);
 
         final int index = out.siblingIndex();
         ensureChildNodes().set(index, in);
@@ -560,7 +621,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
         ((Element) this).childNodes.incrementMod(); // as mod count not changed in set(), requires explicit update, to invalidate the child element cache
     }
 
-    protected void removeChild(Node out) {
+    protected void removeChildInner(Node out) {
         Validate.isTrue(out.parentNode == this);
         Element el = (Element) this;
         if (el.hasValidChildren()) // can remove by index

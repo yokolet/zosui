@@ -21,7 +21,8 @@ public abstract class LeafNode extends Node {
         value = coreValue;
     }
 
-    @Override protected final boolean hasAttributes() {
+    @Override
+    public final boolean hasAttributes() {
         return value instanceof Attributes;
     }
 

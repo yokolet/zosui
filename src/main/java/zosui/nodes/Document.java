@@ -17,7 +17,7 @@ import static zosui.parser.Parser.NamespaceHtml;
  A HTML Document.
 
  @author Jonathan Hedley, jonathan@hedley.net */
-public class Document extends Element {
+public class Document extends Element implements org.w3c.dom.Document {
     private OutputSettings outputSettings = new OutputSettings();
     private Parser parser; // the parser used to parse this document
     private QuirksMode quirksMode = QuirksMode.noQuirks;

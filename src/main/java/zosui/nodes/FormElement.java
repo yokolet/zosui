@@ -52,8 +52,8 @@ public class FormElement extends Element {
     }
 
     @Override
-    protected void removeChild(Node out) {
-        super.removeChild(out);
+    protected void removeChildInner(Node out) {
+        super.removeChildInner(out);
         linkedEls.remove(out);
     }
 

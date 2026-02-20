@@ -110,7 +110,7 @@ public class Element extends Node implements Iterable<Element> {
     }
 
     @Override
-    protected boolean hasAttributes() {
+    public boolean hasAttributes() {
         return attributes != null;
     }
 
