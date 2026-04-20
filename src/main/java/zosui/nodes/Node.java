@@ -35,6 +35,9 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     @Nullable Element parentNode; // Nodes don't always have parents
     int siblingIndex;
 
+    // org.w3c.dom
+    private HashMap<String, Object> userdata;
+
     /**
      * Default constructor. Doesn't set up base uri, children, or attributes; use with caution.
      */
@@ -73,27 +76,99 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     @Override public Node appendChild(org.w3c.dom.Node newChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
-    public abstract boolean hasChildNodes();
-    public abstract Node cloneNode();
-    public abstract void normalize();
-    public abstract boolean isSupported(String feature, String version);
-    public abstract String getNamespaceURI();
-    public abstract String getPrefix();
-    public abstract void setPrefix(String prefix) throws DOMException;
-    public abstract String getLocalName();
+    @Override public boolean hasChildNodes() { return childNodeSize() > 0; }
+    @Override public Node cloneNode(boolean deep) {
+        if (deep) { return clone(); }
+        else { return shallowClone(); }
+    }
+    @Override public void normalize() {
+        throw new RuntimeException("Will be implemented later");
+    }
+    @Override public boolean isSupported(String feature, String version) { return false; }
+    @Override public String getNamespaceURI() {
+        return "http://www.w3.org/1999/xhtml";
+    }
+    @Override public String getPrefix() { return ""; }
+    @Override public void setPrefix(String prefix) throws DOMException {
+        throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "HTML doesn't have a prefix");
+    }
+    @Override public String getLocalName() { return nodeName(); }
     //public abstract boolean hasAttributes(); // this Node impl has the exactly same method.
-    public abstract String getBaseURI();
-    public abstract short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException;
+    @Override public String getBaseURI() { return baseUri(); }
+    @Override public short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException {
+        if (isSameNode(other)) { return 0; }
+        if (getOwnerDocument() != other.getOwnerDocument()) { return Node.DOCUMENT_POSITION_DISCONNECTED; }
+        List<org.w3c.dom.Node> ancestors = new ArrayList<>();
+
+        // test if this node is an ancestor of the other
+        ancestors.add(other);
+        org.w3c.dom.Node parent = other.getParentNode();
+        while (parent != null) {
+            if (parent == this) { return Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING; }
+            ancestors.add(parent);
+            parent = parent.getParentNode();
+        }
+
+        // test if the other is an ancestor of this node while checking a common ancestor
+        parent = getParentNode();
+        int count = 1;
+        while (parent != null) {
+            if (parent == other) { return Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING; }
+            if (ancestors.contains(parent)) {
+                // found the common ancestor
+                int pos = ancestors.indexOf(parent);
+                if (pos >= count) { return Node.DOCUMENT_POSITION_FOLLOWING; }
+                else { return Node.DOCUMENT_POSITION_PRECEDING; }
+            }
+            parent = parent.getParentNode();
+            count++;
+        }
+        return Node.DOCUMENT_POSITION_DISCONNECTED;
+    }
+
     public abstract String getTextContent() throws DOMException;
-    public abstract void setTextContent(String textContent) throws DOMException;
-    public abstract boolean isSameNode(org.w3c.dom.Node other);
-    public abstract String lookupPrefix(String namespaceURI);
-    public abstract boolean isDefaultNamespace(String namespaceURI);
-    public abstract String lookupNamespaceURI(String prefix);
-    public abstract boolean isEqualNode(org.w3c.dom.Node arg);
-    public abstract Object getFeature(String feature, String version);
-    public abstract Object setUserData(String key, Object data, UserDataHandler handler);
-    public abstract Object getUserData(String key);
+    @Override public void setTextContent(String textContent) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public boolean isSameNode(org.w3c.dom.Node other) {
+        return this == other;
+    }
+    @Override public String lookupPrefix(String namespaceURI) { return ""; }
+    @Override public boolean isDefaultNamespace(String namespaceURI) {
+        return namespaceURI.equals(getNamespaceURI());
+    }
+    @Override public String lookupNamespaceURI(String prefix) { return getNamespaceURI(); }
+    @Override public boolean isEqualNode(org.w3c.dom.Node arg) {
+        if (arg == null) { return false; }
+        if (isSameNode(arg)) { return true; }
+        if (!getClass().isInstance(arg)) { return false; }
+        if (areSame(getNodeName(), arg.getNodeName()) &&
+            areSame(getLocalName(), arg.getLocalName()) &&
+            areSame(getNamespaceURI(), arg.getNamespaceURI()) &&
+            areSame(getPrefix(), arg.getPrefix()) &&
+            areSame(getNodeValue(), arg.getNodeName())) {
+            return areSameInDetail(arg);
+        }
+        return false;
+    }
+    @Override public Object getFeature(String feature, String version) { return null; }
+    @Override public Object setUserData(String key, Object data, UserDataHandler handler) {
+        if (userdata == null) { userdata = new HashMap<String, Object>(); }
+        return userdata.put(key, data);
+    }
+    @Override public Object getUserData(String key) {
+        if (userdata == null) { return null; }
+        return userdata.get(key);
+    }
+
+    // Attribute, Document, and Element should override this method
+    protected boolean areSameInDetail(org.w3c.dom.Node arg) { return true; }
+    protected static boolean areSame(final String a, final String b) {
+        if (a == null) { return b == null; }
+        return a.equals(b);
+    }
+
+    // jsoup api
 
     /**
      Get the node name of this node. Use for debugging purposes and not logic switching (for that, use instanceof).
