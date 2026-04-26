@@ -5,7 +5,10 @@ import zosui.internal.QuietAppendable;
 import zosui.internal.SharedConstants;
 import zosui.internal.StringUtil;
 import zosui.parser.ParseSettings;
+
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -40,7 +43,7 @@ import static zosui.nodes.Range.AttributeRange.UntrackedAttr;
  *
  * @author Jonathan Hedley, jonathan@hedley.net
  */
-public class Attributes implements Iterable<Attribute>, Cloneable {
+public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap {
     // The Attributes object is only created on the first use of an attribute; the Element will just have a null
     // Attribute slot otherwise
 
@@ -58,6 +61,27 @@ public class Attributes implements Iterable<Attribute>, Cloneable {
     @Nullable String[] keys = new String[InitialCapacity]; // keys is not null, but contents may be. Same for vals
     @Nullable Object[] vals = new Object[InitialCapacity]; // Genericish: all non-internal attribute values must be Strings and are cast on access.
     // todo - make keys iterable without creating Attribute objects
+
+    // org.w3c.dom.NamedNodeMap methods
+    @Override public org.w3c.dom.Node getNamedItem(String name) { return attribute(name); }
+    @Override public org.w3c.dom.Node setNamedItem(org.w3c.dom.Node arg) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public org.w3c.dom.Node removeNamedItem(String name) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public org.w3c.dom.Node item(int index) {
+        if (index < 0 || index >= size) { return null; }
+        return new Attribute(keys[index], checkNotNull(vals[index]), this);
+    }
+    @Override public int getLength() { return keys.length; }
+    @Override public org.w3c.dom.Node getNamedItemNS(String namespaceURI, String localName) { return attribute(localName); }
+    @Override public org.w3c.dom.Node setNamedItemNS(org.w3c.dom.Node arg) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public org.w3c.dom.Node removeNamedItemNS(String namespaceURI, String localName) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
 
     // check there's room for more
     private void checkCapacity(int minNewSize) {
