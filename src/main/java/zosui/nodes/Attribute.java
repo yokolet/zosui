@@ -6,18 +6,26 @@ import zosui.internal.QuietAppendable;
 import zosui.internal.SharedConstants;
 import zosui.internal.StringUtil;
 import zosui.nodes.Document.OutputSettings.Syntax;
+
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
+
+import zosui.select.Nodes;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
  A single key + value attribute. (Only used for presentation.)
  */
-public class Attribute implements Map.Entry<String, String>, Cloneable  {
+public class Attribute implements Cloneable, Attr  {
     private static final String[] booleanAttributes = {
             "allowfullscreen", "async", "autofocus", "checked", "compact", "declare", "default", "defer", "disabled",
             "formnovalidate", "hidden", "inert", "ismap", "itemscope", "multiple", "muted", "nohref", "noresize",
@@ -28,6 +36,7 @@ public class Attribute implements Map.Entry<String, String>, Cloneable  {
     private String key;
     @Nullable private String val;
     @Nullable Attributes parent; // used to update the holding Attributes when the key / value is changed via this interface
+    private HashMap<String, Object> userdata;
 
     /**
      * Create a new attribute from unencoded (raw) key and value.
@@ -54,11 +63,120 @@ public class Attribute implements Map.Entry<String, String>, Cloneable  {
         this.parent = parent;
     }
 
+    // org.w3c.dom.Node and org.w3c.dom.Attr methods
+    @Override public String getNodeName() { return getKey(); };
+    @Override public String getNodeValue() throws DOMException { return getValue(); }
+    @Override public void setNodeValue(String value) throws DOMException { setValue(value); }
+    @Override public short getNodeType() { return Node.ATTRIBUTE_NODE; };
+    @Override public Node getParentNode() { return parent != null ? parent.ownerElement : null; }
+    @Override public NodeList getChildNodes() { return zosui.nodes.Node.EMPTY_LIST; }
+    @Override public Node getFirstChild() { return null; };
+    @Override public Node getLastChild() { return null; };
+    @Override public Node getPreviousSibling() { return null; }
+    @Override public Node getNextSibling() { return null; }
+    @Override public NamedNodeMap getAttributes() { return null; };
+    @Override public org.w3c.dom.Document getOwnerDocument() { return parent != null ? parent.ownerElement.getOwnerDocument() : null;  }
+    @Override public Node insertBefore(org.w3c.dom.Node newChild, org.w3c.dom.Node refChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Node replaceChild(org.w3c.dom.Node newChild, org.w3c.dom.Node oldChild) throws DOMException {
+        // should call replaceChildInner(Node out, Node in)
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Node removeChild(org.w3c.dom.Node oldChild) throws DOMException {
+        // should call removeChildInner(Node out)
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Node appendChild(org.w3c.dom.Node newChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public boolean hasChildNodes() { return false; }
+    @Override public Node cloneNode(boolean deep) { return clone(); }
+    @Override public void normalize() {
+        throw new RuntimeException("Will be implemented later");
+    }
+    @Override public boolean isSupported(String feature, String version) { return false; }
+    @Override public String getNamespaceURI() { return namespace(); }
+    @Override public String getPrefix() { return prefix(); }
+    @Override public void setPrefix(String prefix) throws DOMException {
+        throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "HTML doesn't have a prefix");
+    }
+    @Override public String getLocalName() { return localName(); }
+    @Override public boolean hasAttributes() { return false; }
+    @Override public String getBaseURI() { return parent != null ? parent.ownerElement.baseUri() : null; }
+    @Override public short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException {
+        if (isSameNode(other)) { return 0; }
+        if (getOwnerDocument() != other.getOwnerDocument()) { return Node.DOCUMENT_POSITION_DISCONNECTED; }
+        List<org.w3c.dom.Node> ancestors = new ArrayList<>();
+
+        // test if this node is an ancestor of the other
+        ancestors.add(other);
+        org.w3c.dom.Node parent = other.getParentNode();
+        while (parent != null) {
+            if (parent == this) { return Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING; }
+            ancestors.add(parent);
+            parent = parent.getParentNode();
+        }
+
+        // test if the other is an ancestor of this node while checking a common ancestor
+        parent = getParentNode();
+        int count = 1;
+        while (parent != null) {
+            if (parent == other) { return Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING; }
+            if (ancestors.contains(parent)) {
+                // found the common ancestor
+                int pos = ancestors.indexOf(parent);
+                if (pos >= count) { return Node.DOCUMENT_POSITION_FOLLOWING; }
+                else { return Node.DOCUMENT_POSITION_PRECEDING; }
+            }
+            parent = parent.getParentNode();
+            count++;
+        }
+        return Node.DOCUMENT_POSITION_DISCONNECTED;
+    }
+
+    @Override public String getTextContent() throws DOMException { return ""; }
+    @Override public void setTextContent(String textContent) throws DOMException { /* does nothing */ }
+    @Override public boolean isSameNode(org.w3c.dom.Node other) {
+        return this == other;
+    }
+    @Override public String lookupPrefix(String namespaceURI) { return namespaceURI.equals(namespace()) ? prefix() : ""; }
+    @Override public boolean isDefaultNamespace(String namespaceURI) {
+        return namespaceURI.equals("http://www.w3.org/1999/xhtml");
+    }
+    @Override public String lookupNamespaceURI(String prefix) { return prefix.equals(prefix()) ? namespace() : ""; }
+    @Override public boolean isEqualNode(org.w3c.dom.Node arg) {
+        if (arg == null) { return false; }
+        if (isSameNode(arg)) { return true; }
+        if (!getClass().isInstance(arg)) { return false; }
+        return areSame(getNodeName(), arg.getNodeName()) && areSame(getNodeValue(), arg.getNodeValue());
+    }
+    private static boolean areSame(final String a, final String b) {
+        if (a == null) { return b == null; }
+        return a.equals(b);
+    }
+    @Override public Object getFeature(String feature, String version) { return null; }
+    @Override public Object setUserData(String key, Object data, UserDataHandler handler) {
+        if (userdata == null) { userdata = new HashMap<String, Object>(); }
+        return userdata.put(key, data);
+    }
+    @Override public Object getUserData(String key) {
+        if (userdata == null) { return null; }
+        return userdata.get(key);
+    }
+
+    @Override public String getName() { return getKey(); }
+    @Override public boolean getSpecified() { return false; }
+    // @Override public String getValue() { return val; } // exactly the same implementation exists
+    // @Override void setValue(String value) throws DOMException { val = value; } // exactly the same implementation exists
+    @Override public Element getOwnerElement() { return parent != null ? parent.ownerElement : null; }
+    @Override public TypeInfo getSchemaTypeInfo() { return null; }
+    @Override public boolean isId() { return getKey().equals("id"); }
+
     /**
      Get the attribute's key (aka name).
      @return the attribute key
      */
-    @Override
     public String getKey() {
         return key;
     }
@@ -110,7 +228,7 @@ public class Attribute implements Map.Entry<String, String>, Cloneable  {
      @param val the new attribute value; may be null (to set an enabled boolean attribute)
      @return the previous value (if was null; an empty string)
      */
-    @Override public String setValue(@Nullable String val) {
+    @Override public void setValue(@Nullable String val) {
         String oldVal = this.val;
         if (parent != null) {
             int i = parent.indexOfKey(this.key);
@@ -120,7 +238,7 @@ public class Attribute implements Map.Entry<String, String>, Cloneable  {
             }
         }
         this.val = val;
-        return Attributes.checkNotNull(oldVal);
+        //return Attributes.checkNotNull(oldVal);
     }
 
     /**

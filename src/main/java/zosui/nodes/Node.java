@@ -45,6 +45,12 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     protected Node() {
     }
 
+    // org.w3c.dom.NodeList implementation
+    public static final NodeList EMPTY_LIST = new NodeList() {
+        @Override public int getLength() { return 0; }
+        @Override public Node item(int index) { return null; }
+    };
+
     // org.w3c.dom.Node methods
     public abstract String getNodeName();
     @Override public String getNodeValue() throws DOMException { return ""; }
@@ -147,7 +153,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
             areSame(getLocalName(), arg.getLocalName()) &&
             areSame(getNamespaceURI(), arg.getNamespaceURI()) &&
             areSame(getPrefix(), arg.getPrefix()) &&
-            areSame(getNodeValue(), arg.getNodeName())) {
+            areSame(getNodeValue(), arg.getNodeValue())) {
             return areSameInDetail(arg);
         }
         return false;

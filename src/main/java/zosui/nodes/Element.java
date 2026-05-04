@@ -12,7 +12,10 @@ import zosui.select.Elements;
 import zosui.select.Evaluator;
 import zosui.select.NodeFilter;
 import zosui.select.NodeVisitor;
+
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -40,7 +43,7 @@ import static zosui.parser.Parser.NamespaceHtml;
  <p>
  From an Element, you can extract data, traverse the node graph, and manipulate the HTML.
 */
-public class Element extends Node implements Iterable<Element> {
+public class Element extends Node implements Iterable<Element>, org.w3c.dom.Element {
     private static final List<Element> EmptyChildren = Collections.emptyList();
     private static final NodeList EmptyNodeList = new NodeList(0);
     private static final Pattern ClassSplit = Pattern.compile("\\s+");
@@ -95,10 +98,18 @@ public class Element extends Node implements Iterable<Element> {
         this(tag, baseUri, null);
     }
 
+    // org.w3c.dom.Element methods
+    @Override public String getNodeName() { return tagName(); }
+    @Override public String getNodeValue() throws DOMException { return nodeValue(); }
+    @Override public short getNodeType() { return Node.ELEMENT_NODE; }
+    @Override public Node getFirstChild() { return hasChildNodes() ? childNodes.getFirst() : null; }
+    @Override public Node getLastChild() { return hasChildNodes() ? childNodes.getLast() : null; }
+    @Override public NamedNodeMap getAttributes() { return attributes; };
+
     /**
      Internal test to check if a nodelist object has been created.
      */
-    protected boolean hasChildNodes() {
+    public boolean hasChildNodes() {
         return childNodes != EmptyNodeList;
     }
 

@@ -56,6 +56,12 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
     private static final int GrowthFactor = 2;
     static final int NotFound = -1;
 
+    Element ownerElement = null;  // for org.w3c.dom.Attr's getOwnerDocument method
+    // for org.w3c.dom.Attr to implement getOwnerElement method
+    public void setOwnerElement(Element ownerElement) {
+        this.ownerElement = ownerElement;
+    }
+
     // the number of instance fields is kept as low as possible giving an object size of 24 bytes
     int size = 0; // number of slots used (not total capacity, which is keys.length). Package visible for actual size (incl internal)
     @Nullable String[] keys = new String[InitialCapacity]; // keys is not null, but contents may be. Same for vals
@@ -647,7 +653,7 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
         }
 
         @Override
-        public Set<Entry<String, String>> entrySet() {
+        public Set entrySet() {
             return new EntrySet();
         }
 
@@ -659,24 +665,24 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
             return oldValue;
         }
 
-        private class EntrySet extends AbstractSet<Map.Entry<String, String>> {
+        private class EntrySet extends AbstractSet<Attribute> {
 
             @Override
-            public Iterator<Map.Entry<String, String>> iterator() {
+            public Iterator<Attribute> iterator() {
                 return new DatasetIterator();
             }
 
             @Override
             public int size() {
                 int count = 0;
-                Iterator<Entry<String, String>> iter = new DatasetIterator();
+                Iterator<Attribute> iter = new DatasetIterator();
                 while (iter.hasNext())
                     count++;
                 return count;
             }
         }
 
-        private class DatasetIterator implements Iterator<Map.Entry<String, String>> {
+        private class DatasetIterator implements Iterator<Attribute> {
             private final Iterator<Attribute> attrIter = attributes.iterator();
             private Attribute attr;
             @Override public boolean hasNext() {
@@ -687,7 +693,7 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
                 return false;
             }
 
-            @Override public Entry<String, String> next() {
+            @Override public Attribute next() {
                 return new Attribute(attr.getKey().substring(dataPrefix.length()), attr.getValue());
             }
 
