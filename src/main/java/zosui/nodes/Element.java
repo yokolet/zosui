@@ -14,6 +14,7 @@ import zosui.select.NodeFilter;
 import zosui.select.NodeVisitor;
 
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 
@@ -33,7 +34,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static zosui.internal.Normalizer.normalize;
 import static zosui.nodes.Document.OutputSettings.Syntax.xml;
 import static zosui.nodes.TextNode.lastCharIsWhitespace;
 import static zosui.parser.Parser.NamespaceHtml;
@@ -104,7 +104,28 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public short getNodeType() { return Node.ELEMENT_NODE; }
     @Override public Node getFirstChild() { return hasChildNodes() ? childNodes.getFirst() : null; }
     @Override public Node getLastChild() { return hasChildNodes() ? childNodes.getLast() : null; }
-    @Override public NamedNodeMap getAttributes() { return attributes; };
+    @Override public NamedNodeMap getAttributes() { return attributes; }
+    @Override public Node cloneNode(boolean deep) {
+        if (deep) { return this.clone(); }
+        else { return this.shallowClone(); }
+    }
+    @Override public String getTextContent() throws DOMException { return text(); }
+
+    @Override public String getTagName() { return tagName(); }
+    @Override public String getAttribute(String name) {
+        Attribute attr = attribute(name);
+        return attr == null ? null : attr.getValue();
+    }
+    @Override public void setAttribute(String name, String value) throws DOMException { attr(name, value); }
+    @Override public void removeAttribute(String name) throws DOMException { removeAttr(name); }
+    @Override public Attr getAttributeNode(String name) { return attribute(name); }
+    @Override public Attr setAttributeNode(Attr newAttr) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public Attr removeAttributeNode(Attr newAttr) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    //@Override public NodeList getElementsByTagName(String name) { return getElementsByTag(name); }
 
     /**
      Internal test to check if a nodelist object has been created.
@@ -2079,13 +2100,17 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         return  (Element) super.filter(nodeFilter);
     }
 
-    static final class NodeList extends ArrayList<Node> {
+    static final class NodeList extends ArrayList<Node> implements org.w3c.dom.NodeList {
         /** Tracks if the children have valid sibling indices. We only need to reindex on siblingIndex() demand. */
         boolean validChildren = true;
 
         public NodeList(int size) {
             super(size);
         }
+
+        // org.w3c.dom.NodeList methods
+        @Override public org.w3c.dom.Node item(int index) { return get(index); }
+        @Override public int getLength() { return size(); }
 
         /** The modCount is used to invalidate the cached element children. */
         int modCount() {
