@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.TypeInfo;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -125,7 +126,37 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public Attr removeAttributeNode(Attr newAttr) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
-    //@Override public NodeList getElementsByTagName(String name) { return getElementsByTag(name); }
+    @Override public org.w3c.dom.NodeList getElementsByTagName(String name) { return getElementsByTag(name); }
+    @Override public String getAttributeNS(String namespaceURI, String localName) throws DOMException {
+        return getAttribute(localName);
+    }
+    @Override public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
+        setAttribute(qualifiedName, value);
+    }
+    @Override public void removeAttributeNS(String namespaceURI, String localName) throws DOMException {
+        removeAttribute(localName);
+    }
+    @Override public Attr getAttributeNodeNS(String namespaceURI, String localName) throws DOMException {
+        return getAttributeNode(localName);
+    }
+    @Override public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
+        return setAttributeNode(newAttr);
+    }
+    @Override public org.w3c.dom.NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
+        return getElementsByTagName(localName);
+    }
+    @Override public boolean hasAttribute(String name) { return attribute(name) != null; }
+    @Override public boolean hasAttributeNS(String namespaceURI, String localName) { return attribute(localName) != null; }
+    @Override public TypeInfo getSchemaTypeInfo() { return null; }
+    @Override public void setIdAttribute(String name, boolean isId) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
 
     /**
      Internal test to check if a nodelist object has been created.
@@ -1305,7 +1336,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      */
     public Elements getElementsByTag(String tagName) {
         Validate.notEmpty(tagName);
-        tagName = normalize(tagName);
+        tagName = Normalizer.normalize(tagName);
 
         return Collector.collect(new Evaluator.Tag(tagName), this);
     }
