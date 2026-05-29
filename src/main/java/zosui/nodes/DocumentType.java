@@ -1,16 +1,19 @@
 package zosui.nodes;
 
+import org.jspecify.annotations.Nullable;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+
 import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
 import zosui.helper.Validate;
 import zosui.nodes.Document.OutputSettings.Syntax;
-import org.jspecify.annotations.Nullable;
-
 
 /**
  * A {@code <!DOCTYPE>} node.
  */
-public class DocumentType extends LeafNode {
+public class DocumentType extends LeafNode implements org.w3c.dom.DocumentType {
     // todo needs a bit of a chunky cleanup. this level of detail isn't needed
     public static final String PUBLIC_KEY = "PUBLIC";
     public static final String SYSTEM_KEY = "SYSTEM";
@@ -18,6 +21,7 @@ public class DocumentType extends LeafNode {
     private static final String PubSysKey = "pubSysKey"; // PUBLIC or SYSTEM
     private static final String PublicId = "publicId";
     private static final String SystemId = "systemId";
+    private static final String InternalSubsetKey = Attributes.internalKey("doctypeInternalSubset");
 
     /**
      * Create a new doctype element.
@@ -36,9 +40,34 @@ public class DocumentType extends LeafNode {
         updatePubSyskey();
     }
 
+    // org.w3c.dom.DocumentType methods
+    @Override public String getNodeName() { return name(); }
+    @Override public String getNodeValue() throws DOMException { return null; }
+    @Override public short getNodeType() { return DOCUMENT_TYPE_NODE; }
+    @Override public NodeList getChildNodes() {  return EMPTY_LIST; }
+    @Override public Node getFirstChild() { return null; }
+    @Override public Node getLastChild() { return null; }
+    @Override public NamedNodeMap getAttributes() { return EMPTY_MAP; }
+    @Override public boolean hasChildNodes() { return false; }
+    @Override public String getTextContent() throws DOMException { return null; }
+    @Override public String getName() { return name(); }
+    @Override public NamedNodeMap getEntities() { return EMPTY_MAP; }
+    @Override public NamedNodeMap getNotations() { return EMPTY_MAP; }
+    @Override public String getPublicId() { return publicId(); }
+    @Override public String getSystemId() { return systemId(); }
+    @Override public String getInternalSubset() { return attributes().get(InternalSubsetKey); }
+
     public void setPubSysKey(@Nullable String value) {
         if (value != null)
             attr(PubSysKey, value);
+    }
+
+    /**
+     Sets the raw XML internal subset for serialization.
+     @param value the internal subset contents
+     */
+    public void setInternalSubset(String value) {
+        attributes().put(InternalSubsetKey, value);
     }
 
     private void updatePubSyskey() {
@@ -95,7 +124,6 @@ public class DocumentType extends LeafNode {
             accum.append(" \"").append(attr(SystemId)).append('"');
         accum.append('>');
     }
-
 
     private boolean has(final String attribute) {
         return !StringUtil.isBlank(attr(attribute));
