@@ -1,5 +1,10 @@
 package zosui.nodes;
 
+import org.jspecify.annotations.Nullable;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.NamedNodeMap;
+
 import zosui.helper.DataUtil;
 import zosui.helper.Validate;
 import zosui.parser.ParseSettings;
@@ -7,7 +12,6 @@ import zosui.parser.Parser;
 import zosui.parser.Tag;
 import zosui.select.Elements;
 import zosui.select.Evaluator;
-import org.jspecify.annotations.Nullable;
 
 import java.nio.charset.Charset;
 
@@ -65,6 +69,38 @@ public class Document extends Element implements org.w3c.dom.Document {
 
         return doc;
     }
+
+    // org.w3c.dom.DOMImplementation
+    public static class DocImpl implements DOMImplementation {
+        @Override public boolean hasFeature(String feature, String version) { return false; }
+        @Override public DocumentType createDocumentType(String qualifiedName, String publicId, String systemId) throws DOMException {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+        }
+        @Override public Document createDocument(String namespaceURI, String qualifiedName, org.w3c.dom.DocumentType doctype) throws DOMException {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+        }
+        @Override public Object getFeature(String feature, String version) { return null; }
+    }
+    private static final DocImpl implementation = new DocImpl();
+
+    // org.w3c.dom.Document methods
+    @Override public String getNodeName() { return "#document"; }
+    @Override public String getNodeValue() throws DOMException { return null; }
+    @Override public short getNodeType() { return Node.DOCUMENT_NODE; }
+    @Override public NamedNodeMap getAttributes() { return null; }
+    @Override public Node cloneNode(boolean deep) {
+        if (deep) { return this.clone(); }
+        else { return this.shallowClone(); }
+    }
+    @Override public String getNamespaceURI() { return null; }
+    @Override public String getPrefix() { return null; }
+    @Override public String getLocalName() { return null; }
+    @Override public boolean hasAttributes() { return false; }
+    @Override public String getTextContent() throws DOMException { return null; }
+    @Override public DocumentType getDoctype() { return documentType(); }
+    @Override public DOMImplementation getImplementation() { return implementation; }
+    @Override public Element getDocumentElement() { return root(); }
+    // Element createElement(String tagName) throws DOMException
 
     /**
      * Get the URL this Document was parsed from. If the starting URL is a redirect,
