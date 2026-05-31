@@ -1,22 +1,34 @@
 package zosui.nodes;
 
-import zosui.internal.QuietAppendable;
-import zosui.parser.Parser;
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
+import org.w3c.dom.DOMException;
+import zosui.internal.QuietAppendable;
+import zosui.parser.Parser;
 
 /**
  A comment node.
 
  @author Jonathan Hedley, jonathan@hedley.net */
-public class Comment extends LeafNode {
+public class Comment extends LeafNode implements org.w3c.dom.Comment {
     /**
      Create a new comment node.
      @param data The contents of the comment
      */
     public Comment(String data) {
         super(data);
+    }
+
+    // org.w3c.dom.Comment methods
+    @Override public String getNodeName() { return "#comment"; }
+    @Override public String getNodeValue() { return value instanceof String ? (String) value : null; }
+    @Override public short getNodeType() { return Node.COMMENT_NODE; }
+    @Override public String getTextContent()  throws DOMException { return getData(); }
+    @Override public int getLength() { return getData().length(); }
+    @Override public String substringData(int offset, int count) throws DOMException {
+        return getData().substring(offset, offset + count);
     }
 
     @Override public String nodeName() {
@@ -27,13 +39,13 @@ public class Comment extends LeafNode {
      Get the contents of the comment.
      @return comment content
      */
-    public String getData() {
+    public String getData() throws DOMException {
         return coreValue();
     }
 
-    public Comment setData(String data) {
+    public void setData(String data) throws DOMException {
         coreValue(data);
-        return this;
+        // return this;
     }
 
     @Override
