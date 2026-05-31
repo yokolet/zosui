@@ -1,5 +1,8 @@
 package zosui.nodes;
 
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Text;
+
 import zosui.helper.Validate;
 import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
@@ -9,7 +12,7 @@ import zosui.internal.StringUtil;
  A text node.
 
  @author Jonathan Hedley, jonathan@hedley.net */
-public class TextNode extends LeafNode {
+public class TextNode extends LeafNode implements Text {
     /**
      Create a new TextNode representing the supplied (unencoded) text).
 
@@ -19,6 +22,23 @@ public class TextNode extends LeafNode {
     public TextNode(String text) {
         super(text);
     }
+
+    // org.w3c.dom.Text methods
+    @Override public String getNodeName() { return "#text"; }
+    @Override public String getNodeValue() { return value instanceof String ? (String) value : null; }
+    @Override public short getNodeType() { return Node.TEXT_NODE; }
+    @Override public String getTextContent()  throws DOMException { return text(); }
+    @Override public String getData() throws DOMException { return text(); }
+    @Override public int getLength() { return text().length(); }
+    @Override public String substringData(int offset, int count) throws DOMException {
+        return text().substring(offset, offset + count);
+    }
+    //@Override public Text splitText(int offest) throws DOMException { return null; }
+    @Override public boolean isElementContentWhitespace() { return !getWholeText().equals(text()); }
+    @Override public Text replaceWholeText(String newText) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+
 
 	@Override public String nodeName() {
         return "#text";

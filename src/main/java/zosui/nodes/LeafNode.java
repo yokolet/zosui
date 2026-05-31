@@ -1,15 +1,20 @@
 package zosui.nodes;
 
+import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+
 import zosui.helper.Validate;
 import zosui.internal.QuietAppendable;
-import org.jspecify.annotations.Nullable;
-
-import java.util.List;
 
 /**
  A node that does not hold any children. E.g.: {@link TextNode}, {@link DataNode}, {@link Comment}.
  */
-public abstract class LeafNode extends Node {
+public abstract class LeafNode extends Node implements CharacterData {
     Object value; // either a string value, or an attribute map (in the rare case multiple attributes are set)
 
     public LeafNode() {
@@ -19,6 +24,31 @@ public abstract class LeafNode extends Node {
     protected LeafNode(String coreValue) {
         Validate.notNull(coreValue);
         value = coreValue;
+    }
+
+    // org.w3c.dom.CharacterData methods
+    @Override public NodeList getChildNodes() {  return EMPTY_LIST; }
+    @Override public Node getFirstChild() { return null; }
+    @Override public Node getLastChild() { return null; }
+    @Override public NamedNodeMap getAttributes() { return attributes(); }
+    @Override public boolean hasChildNodes() { return false; }
+    @Override public String getData() throws DOMException { return null; }
+    @Override public void setData(String data) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public int getLength() { return 0; }
+    @Override public String substringData(int offset, int count) throws DOMException { return null; }
+    @Override public void appendData(String data) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public void insertData(int offest, String data) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public void deleteData(int offest, int count) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    @Override public void replaceData(int offest, int count, String arg) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
 
     @Override

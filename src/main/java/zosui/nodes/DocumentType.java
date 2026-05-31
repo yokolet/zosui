@@ -44,11 +44,7 @@ public class DocumentType extends LeafNode implements org.w3c.dom.DocumentType {
     @Override public String getNodeName() { return name(); }
     @Override public String getNodeValue() throws DOMException { return null; }
     @Override public short getNodeType() { return DOCUMENT_TYPE_NODE; }
-    @Override public NodeList getChildNodes() {  return EMPTY_LIST; }
-    @Override public Node getFirstChild() { return null; }
-    @Override public Node getLastChild() { return null; }
     @Override public NamedNodeMap getAttributes() { return EMPTY_MAP; }
-    @Override public boolean hasChildNodes() { return false; }
     @Override public String getTextContent() throws DOMException { return null; }
     @Override public String getName() { return name(); }
     @Override public NamedNodeMap getEntities() { return EMPTY_MAP; }
