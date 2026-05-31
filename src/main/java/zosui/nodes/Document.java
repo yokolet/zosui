@@ -1,9 +1,20 @@
 package zosui.nodes;
 
+import java.nio.charset.Charset;
+
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DOMStringList;
+import org.w3c.dom.EntityReference;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
 
 import zosui.helper.DataUtil;
 import zosui.helper.Validate;
@@ -12,8 +23,6 @@ import zosui.parser.Parser;
 import zosui.parser.Tag;
 import zosui.select.Elements;
 import zosui.select.Evaluator;
-
-import java.nio.charset.Charset;
 
 import static zosui.parser.Parser.NamespaceHtml;
 
@@ -83,6 +92,22 @@ public class Document extends Element implements org.w3c.dom.Document {
     }
     private static final DocImpl implementation = new DocImpl();
 
+    // org.w3c.dom.DOMConfiguration
+    public static class DocConfig implements org.w3c.dom.DOMConfiguration {
+        private static DOMStringList EMPTY_STRINGS = new DOMStringList() {
+            @Override public String item(int index) { return null; }
+            @Override public int getLength() { return 0; }
+            @Override public boolean contains(String str) { return false; }
+        };
+        @Override public void setParameter(String name, Object value) throws DOMException {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+        }
+        @Override public Object getParameter(String name) throws DOMException { return null; }
+        @Override public boolean canSetParameter(String name, Object value) { return false; }
+        @Override public DOMStringList getParameterNames() { return EMPTY_STRINGS; }
+    }
+    private static final DocConfig configuration = new DocConfig();
+
     // org.w3c.dom.Document methods
     @Override public String getNodeName() { return "#document"; }
     @Override public String getNodeValue() throws DOMException { return null; }
@@ -101,6 +126,65 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public DOMImplementation getImplementation() { return implementation; }
     @Override public Element getDocumentElement() { return root(); }
     // Element createElement(String tagName) throws DOMException
+    @Override public DocumentFragment createDocumentFragment() {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public Text createTextNode(String data) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public Comment createComment(String data) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public CDATASection createCDATASection(String data) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public ProcessingInstruction createProcessingInstruction(String target, String data) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public Attr createAttribute(String name) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public EntityReference createEntityReference(String name) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public NodeList getElementsByTagName(String name) {
+        return getElementsByTagName(name);
+    }
+    @Override public Node importNode(org.w3c.dom.Node importNode, boolean deep) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public NodeList getElementsByTagNameNS(String namespaceURI, String localName) throws DOMException {
+        return getElementsByTagName(localName);
+    }
+    // public Element getElementById(String elementId) {}
+    @Override public String getInputEncoding() { return null; }
+    @Override public String getXmlEncoding() { return null; }
+    @Override public boolean getXmlStandalone() { return false; }
+    @Override public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public String getXmlVersion() { return "1.0"; }
+    @Override public void setXmlVersion(String xmlVersion) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public boolean getStrictErrorChecking() { return false; }
+    @Override public void setStrictErrorChecking(boolean strictErrorChecking) { /* does nothing */ }
+    @Override public String getDocumentURI() { return baseUri(); }
+    @Override public void setDocumentURI(String documentURI) { /* does nothing */ }
+    @Override public Node adoptNode(org.w3c.dom.Node source) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+    @Override public DOMConfiguration getDomConfig() { return configuration; }
+    @Override public void normalizeDocument() { /* does nothing */ }
+    @Override public Node renameNode(org.w3c.dom.Node n, String namespaceURI, String qualifiedName) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
 
     /**
      * Get the URL this Document was parsed from. If the starting URL is a redirect,

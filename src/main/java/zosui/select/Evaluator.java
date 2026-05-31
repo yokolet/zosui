@@ -87,4 +87,28 @@ public abstract class Evaluator {
             return String.format("%s", tagName);
         }
     }
+
+    /**
+     * Evaluator for element id
+     */
+    public static final class Id extends Evaluator {
+        private final String id;
+
+        public Id(String id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean matches(Element root, Element element) {
+            return (id.equals(element.id()));
+        }
+
+        @Override protected int cost() {
+            return 2;
+        }
+        @Override
+        public String toString() {
+            return String.format("#%s", id);
+        }
+    }
 }

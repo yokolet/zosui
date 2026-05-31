@@ -1350,10 +1350,10 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      * @param id The ID to search for.
      * @return The first matching element by ID, starting with this element, or null if none found.
      */
-//    public @Nullable Element getElementById(String id) {
-//        Validate.notEmpty(id);
-//        return Collector.findFirst(new Evaluator.Id(id), this);
-//    }
+    public @Nullable Element getElementById(String id) {
+        Validate.notEmpty(id);
+        return Collector.findFirst(new Evaluator.Id(id), this);
+    }
 
     /**
      * Find elements that have this class, including or under this element. Case-insensitive.
