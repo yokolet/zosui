@@ -1,5 +1,6 @@
 package zosui.nodes;
 
+import org.w3c.dom.DOMException;
 import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
 
@@ -23,6 +24,16 @@ public class XmlDeclaration extends LeafNode {
     public XmlDeclaration(String name, boolean isDeclaration) {
         super(name);
         this.isDeclaration = isDeclaration;
+    }
+
+    // w3c Node methods
+    @Override public String getNodeName() { return "#declaration"; }
+    @Override public String getNodeValue() { return name(); }
+    @Override public short getNodeType() { return Node.TEXT_NODE; }
+    @Override public String getTextContent()  throws DOMException { return name(); }
+    @Override public int getLength() { return name().length(); }
+    @Override public String substringData(int offset, int count) throws DOMException {
+        return name().substring(offset, offset + count);
     }
 
     @Override public String nodeName() {
