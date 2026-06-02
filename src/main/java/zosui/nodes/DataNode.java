@@ -1,5 +1,6 @@
 package zosui.nodes;
 
+import org.w3c.dom.DOMException;
 import zosui.internal.QuietAppendable;
 
 /**
@@ -14,6 +15,17 @@ public class DataNode extends LeafNode {
      */
     public DataNode(String data) {
         super(data);
+    }
+
+    // org.w3c.dom.CharacterData methods
+    @Override public String getNodeName() { return "#data"; }
+    @Override public String getNodeValue() { return getWholeData(); }
+    @Override public short getNodeType() { return Node.CDATA_SECTION_NODE; }
+    @Override public String getTextContent() throws DOMException { return getWholeData(); }
+    @Override public String getData() throws DOMException { return getWholeData(); }
+    @Override public int getLength() throws DOMException { return getWholeData().length(); }
+    @Override public String substringData(int offset, int count) throws DOMException {
+        return getData().substring(offset, offset + count);
     }
 
     @Override public String nodeName() {
