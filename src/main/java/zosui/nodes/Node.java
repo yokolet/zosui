@@ -113,7 +113,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     }
     @Override public String getLocalName() { return nodeName(); }
     //public abstract boolean hasAttributes(); // this Node impl has the exactly same method.
-    @Override public String getBaseURI() { return baseUri(); }
+    public abstract String getBaseURI();
     @Override public short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException {
         if (isSameNode(other)) { return 0; }
         if (getOwnerDocument() != other.getOwnerDocument()) { return Node.DOCUMENT_POSITION_DISCONNECTED; }

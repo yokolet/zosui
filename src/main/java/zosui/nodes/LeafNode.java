@@ -32,6 +32,7 @@ public abstract class LeafNode extends Node implements CharacterData {
     @Override public Node getLastChild() { return null; }
     @Override public NamedNodeMap getAttributes() { return attributes(); }
     @Override public boolean hasChildNodes() { return false; }
+    @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
     @Override public String getData() throws DOMException { return null; }
     @Override public void setData(String data) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");

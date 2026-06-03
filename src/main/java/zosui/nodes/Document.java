@@ -121,6 +121,7 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public String getPrefix() { return null; }
     @Override public String getLocalName() { return null; }
     @Override public boolean hasAttributes() { return false; }
+    @Override public String getBaseURI() { return baseUri().trim().equals("") ? null : baseUri().trim(); }
     @Override public String getTextContent() throws DOMException { return null; }
     @Override public DocumentType getDoctype() { return documentType(); }
     @Override public DOMImplementation getImplementation() { return implementation; }

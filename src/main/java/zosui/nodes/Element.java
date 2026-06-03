@@ -110,6 +110,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         if (deep) { return this.clone(); }
         else { return this.shallowClone(); }
     }
+    @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
     @Override public String getTextContent() throws DOMException { return text(); }
 
     @Override public String getTagName() { return tagName(); }
