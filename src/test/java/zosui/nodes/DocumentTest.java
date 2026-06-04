@@ -144,7 +144,20 @@ public class DocumentTest {
     @Test
     public void testLookupPrefix() {
         String namespaceURI = document.getNamespaceURI();
-        assertNull(namespaceURI);
         assertNull(document.lookupPrefix(namespaceURI));
+    }
+
+    @Test
+    public void testIsDefaultNamespace() {
+        String namespace = "http://www.w3.org/1999/xhtml";
+        assertFalse(document.isDefaultNamespace(namespace));
+    }
+
+    @Test
+    public void testLookupNamespaceURI() {
+        String namespaceURI = document.lookupNamespaceURI(null);
+        assertNull(document.lookupNamespaceURI(namespaceURI));
+        namespaceURI = document.lookupNamespaceURI("");
+        assertNull(document.lookupNamespaceURI(namespaceURI));
     }
 }

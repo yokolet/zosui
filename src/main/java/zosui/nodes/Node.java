@@ -104,14 +104,12 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
         throw new RuntimeException("Will be implemented later");
     }
     @Override public boolean isSupported(String feature, String version) { return false; }
-    @Override public String getNamespaceURI() {
-        return "http://www.w3.org/1999/xhtml";
-    }
-    @Override public String getPrefix() { return ""; }
+    public abstract String getNamespaceURI();
+    public abstract String getPrefix();
     @Override public void setPrefix(String prefix) throws DOMException {
         throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "HTML doesn't have a prefix");
     }
-    @Override public String getLocalName() { return nodeName(); }
+    public abstract String getLocalName();
     //public abstract boolean hasAttributes(); // this Node impl has the exactly same method.
     public abstract String getBaseURI();
     @Override public short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException {
@@ -152,10 +150,8 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     @Override public boolean isSameNode(org.w3c.dom.Node other) {
         return this == other;
     }
-    @Override public String lookupPrefix(String namespaceURI) { return ""; }
-    @Override public boolean isDefaultNamespace(String namespaceURI) {
-        return namespaceURI.equals(getNamespaceURI());
-    }
+    public abstract String lookupPrefix(String namespaceURI);
+    public abstract boolean isDefaultNamespace(String namespaceURI);
     @Override public String lookupNamespaceURI(String prefix) { return getNamespaceURI(); }
     @Override public boolean isEqualNode(org.w3c.dom.Node arg) {
         if (arg == null) { return false; }

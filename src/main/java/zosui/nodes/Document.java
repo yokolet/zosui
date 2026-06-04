@@ -123,6 +123,8 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public boolean hasAttributes() { return false; }
     @Override public String getBaseURI() { return baseUri().trim().equals("") ? null : baseUri().trim(); }
     @Override public String getTextContent() throws DOMException { return null; }
+    @Override public String lookupPrefix(String namespaceURI) { return null; }
+    @Override public boolean isDefaultNamespace(String namespaceURI) { return false; }
     @Override public DocumentType getDoctype() { return documentType(); }
     @Override public DOMImplementation getImplementation() { return implementation; }
     @Override public Element getDocumentElement() { return root(); }

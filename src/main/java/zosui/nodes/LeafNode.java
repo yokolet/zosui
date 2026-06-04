@@ -32,7 +32,12 @@ public abstract class LeafNode extends Node implements CharacterData {
     @Override public Node getLastChild() { return null; }
     @Override public NamedNodeMap getAttributes() { return attributes(); }
     @Override public boolean hasChildNodes() { return false; }
+    @Override public String getNamespaceURI() { return null; }
+    @Override public String getPrefix() { return null; }
+    @Override public String getLocalName() { return null; }
     @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
+    @Override public String lookupPrefix(String namespaceURI) { return null; }
+    @Override public boolean isDefaultNamespace(String namespaceURI) { return false; }
     @Override public String getData() throws DOMException { return null; }
     @Override public void setData(String data) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
