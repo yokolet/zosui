@@ -2,10 +2,8 @@ package zosui.nodes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.*;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import zosui.parser.Parser;
 
 import java.io.IOException;
@@ -90,6 +88,15 @@ public class DocumentTest {
     }
 
     @Test
+    public void testCloneNode() {
+        Node cloned = document.cloneNode(true);
+        assertInstanceOf(Document.class, cloned);
+        Document clonedDoc = (Document) cloned;
+        assertFalse(document.isSameNode(clonedDoc));
+        assertEquals(1, clonedDoc.getChildNodes().getLength());
+    }
+
+    @Test
     public void testIsSupported() {
         assertFalse(document.isSupported("feature", "version"));
     }
@@ -159,5 +166,39 @@ public class DocumentTest {
         assertNull(document.lookupNamespaceURI(namespaceURI));
         namespaceURI = document.lookupNamespaceURI("");
         assertNull(document.lookupNamespaceURI(namespaceURI));
+    }
+
+    @Test
+    public void testIsEqualNode() {
+        org.w3c.dom.Document cloned = (org.w3c.dom.Document) document.cloneNode(true);
+        assertFalse(document.isSameNode(cloned));
+        assertTrue(document.isEqualNode(cloned));
+    }
+
+    @Test
+    public void testUserData() {
+        document.setUserData("key", "value", null);
+        assertEquals("value", document.getUserData("key"));
+        document.setUserData("key", null, null);
+        assertNull(document.getUserData("key"));
+    }
+
+    @Test
+    public void testGetDoctype() {
+        assertNull(document.getDoctype());
+    }
+
+    @Test
+    public void testGetImplementation() {
+        DOMImplementation domImpl = document.getImplementation();
+        assertNotNull(domImpl);
+        assertInstanceOf(DOMImplementation.class, domImpl);
+    }
+
+    @Test
+    public void testGetDocumentElement() {
+        assertNotNull(document.getDocumentElement());
+        org.w3c.dom.Element element = document.getDocumentElement();;
+        assertEquals("html", element.getNodeName());
     }
 }

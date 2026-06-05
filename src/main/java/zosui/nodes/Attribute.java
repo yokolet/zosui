@@ -149,12 +149,20 @@ public class Attribute implements Cloneable, Attr  {
         if (arg == null) { return false; }
         if (isSameNode(arg)) { return true; }
         if (!getClass().isInstance(arg)) { return false; }
-        return areSame(getNodeName(), arg.getNodeName()) && areSame(getNodeValue(), arg.getNodeValue());
+        if (areSame(getNodeName(), arg.getNodeName()) &&
+                areSame(getLocalName(), arg.getLocalName()) &&
+                areSame(getNamespaceURI(), arg.getNamespaceURI()) &&
+                areSame(getPrefix(), arg.getPrefix()) &&
+                areSame(getNodeValue(), arg.getNodeValue())) {
+            return true;
+        }
+        return false;
     }
     private static boolean areSame(final String a, final String b) {
         if (a == null) { return b == null; }
         return a.equals(b);
     }
+
     @Override public Object getFeature(String feature, String version) { return null; }
     @Override public Object setUserData(String key, Object data, UserDataHandler handler) {
         if (userdata == null) { userdata = new HashMap<String, Object>(); }

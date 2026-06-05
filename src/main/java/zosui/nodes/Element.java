@@ -164,6 +164,19 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
 
+    protected boolean areSameInDetail(org.w3c.dom.Node arg) {
+        NamedNodeMap attrs = arg.getAttributes();
+        NamedNodeMap otherAttrs = arg.getAttributes();
+        if (attrs == null && otherAttrs == null) { return true; }
+        if (attrs != null && otherAttrs != null) {
+            if (attrs.getLength() != otherAttrs.getLength()) { return false; }
+            for (int i = 0; i < attrs.getLength(); i++) {
+                if (!attrs.item(i).isEqualNode(otherAttrs.item(i))) { return false; }
+            }
+        }
+        return true;
+    }
+
     /**
      Internal test to check if a nodelist object has been created.
      */

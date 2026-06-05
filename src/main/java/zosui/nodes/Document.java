@@ -127,7 +127,7 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public boolean isDefaultNamespace(String namespaceURI) { return false; }
     @Override public DocumentType getDoctype() { return documentType(); }
     @Override public DOMImplementation getImplementation() { return implementation; }
-    @Override public Element getDocumentElement() { return root(); }
+    @Override public Element getDocumentElement() { return (Element)firstChild(); }
     // Element createElement(String tagName) throws DOMException
     @Override public DocumentFragment createDocumentFragment() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
@@ -187,6 +187,16 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public void normalizeDocument() { /* does nothing */ }
     @Override public Node renameNode(org.w3c.dom.Node n, String namespaceURI, String qualifiedName) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+    }
+
+    protected boolean areSameInDetail(org.w3c.dom.Node arg) {
+        if (getChildNodes().getLength() != arg.getChildNodes().getLength()) { return false; }
+        org.w3c.dom.NodeList nodes = getChildNodes();
+        org.w3c.dom.NodeList otherNodes = arg.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            if (!nodes.item(i).isEqualNode(otherNodes.item(i))) { return false; }
+        }
+        return true;
     }
 
     /**
