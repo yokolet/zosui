@@ -80,7 +80,7 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
         if (index < 0 || index >= size) { return null; }
         return new Attribute(keys[index], checkNotNull(vals[index]), this);
     }
-    @Override public int getLength() { return keys.length; }
+    @Override public int getLength() { return size; }
     @Override public org.w3c.dom.Node getNamedItemNS(String namespaceURI, String localName) { return attribute(localName); }
     @Override public org.w3c.dom.Node setNamedItemNS(org.w3c.dom.Node arg) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");

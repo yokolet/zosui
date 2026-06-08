@@ -65,7 +65,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
 
     // org.w3c.dom.Node methods
     public abstract String getNodeName();
-    @Override public String getNodeValue() throws DOMException { return ""; }
+    public abstract String getNodeValue() throws DOMException;
     @Override public void setNodeValue(String value) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
