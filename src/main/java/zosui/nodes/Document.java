@@ -21,6 +21,7 @@ import zosui.helper.Validate;
 import zosui.parser.ParseSettings;
 import zosui.parser.Parser;
 import zosui.parser.Tag;
+import zosui.select.Collector;
 import zosui.select.Elements;
 import zosui.select.Evaluator;
 
@@ -113,6 +114,7 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public String getNodeValue() throws DOMException { return null; }
     @Override public short getNodeType() { return Node.DOCUMENT_NODE; }
     @Override public NamedNodeMap getAttributes() { return null; }
+    @Override public org.w3c.dom.Document getOwnerDocument() { return null; }
     @Override public Node cloneNode(boolean deep) {
         if (deep) { return this.clone(); }
         else { return this.shallowClone(); }
@@ -150,8 +152,11 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public EntityReference createEntityReference(String name) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
     }
-    @Override public NodeList getElementsByTagName(String name) {
-        return getElementsByTagName(name);
+    @Override public org.w3c.dom.NodeList getElementsByTagName(String name) {
+        if (!name.equals("*")) { return getElementsByTag(name); }
+        Element element = firstElementChild();
+        if (element == null) { return EMPTY_LIST; }
+        return Collector.collect(new Evaluator.AllElements(), element);
     }
     @Override public Node importNode(org.w3c.dom.Node importNode, boolean deep) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
@@ -162,10 +167,10 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
     }
-    @Override public NodeList getElementsByTagNameNS(String namespaceURI, String localName) throws DOMException {
+    @Override public org.w3c.dom.NodeList getElementsByTagNameNS(String namespaceURI, String localName) throws DOMException {
         return getElementsByTagName(localName);
     }
-    // public Element getElementById(String elementId) {}
+    // public Element getElementById(String elementId) {}  // exactly the same method is defined in Element
     @Override public String getInputEncoding() { return null; }
     @Override public String getXmlEncoding() { return null; }
     @Override public boolean getXmlStandalone() { return false; }
@@ -178,7 +183,7 @@ public class Document extends Element implements org.w3c.dom.Document {
     }
     @Override public boolean getStrictErrorChecking() { return false; }
     @Override public void setStrictErrorChecking(boolean strictErrorChecking) { /* does nothing */ }
-    @Override public String getDocumentURI() { return baseUri(); }
+    @Override public String getDocumentURI() { return baseUri().equals("") ? null : baseUri().trim(); }
     @Override public void setDocumentURI(String documentURI) { /* does nothing */ }
     @Override public Node adoptNode(org.w3c.dom.Node source) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");

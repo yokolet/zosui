@@ -3,16 +3,14 @@ package zosui.nodes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.*;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import zosui.parser.Parser;
-
-import java.io.IOException;
-import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentTest {
-    private static String html = "<html><head></head><body><div class=\"baz\"><a href=\"foo\" class=\"bar\">first</a></div></body></html>";
+    private static String html = "<html><head></head><body id=\"myBody\"><div class=\"baz\"><a href=\"foo\" class=\"bar\">first</a></div></body></html>";
 
     private static org.w3c.dom.Document document;
 
@@ -200,5 +198,59 @@ public class DocumentTest {
         assertNotNull(document.getDocumentElement());
         org.w3c.dom.Element element = document.getDocumentElement();;
         assertEquals("html", element.getNodeName());
+    }
+
+    @Test
+    public void testGetElementsByTagName() {
+        NodeList list = document.getElementsByTagName("html");
+        assertEquals(1, list.getLength());
+        assertEquals("html", list.item(0).getNodeName());
+        list = document.getElementsByTagName("head");
+        assertEquals(1, list.getLength());
+        assertEquals("head", list.item(0).getNodeName());
+        list = document.getElementsByTagName("body");
+        assertEquals(1, list.getLength());
+        assertEquals("body", list.item(0).getNodeName());
+        list = document.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        assertEquals("div", list.item(0).getNodeName());
+        list = document.getElementsByTagName("a");
+        assertEquals(1, list.getLength());
+        assertEquals("a", list.item(0).getNodeName());
+    }
+
+    @Test
+    public void testGetElementsByTagNameWithStar() {
+        NodeList list = document.getElementsByTagName("*");
+        assertEquals(5, list.getLength());
+    }
+
+    @Test
+    public void testGetElementsByTagNameNS() {
+        NodeList list = document.getElementsByTagNameNS("*", "*");
+        assertEquals(5, list.getLength());
+    }
+
+    @Test
+    public void testGetElementById() {
+        Element element = document.getElementById("myBody");
+        assertEquals("myBody", element.getAttribute("id"));
+    }
+
+    @Test
+    public void testGetInputEncoding() {
+        String encoding = document.getInputEncoding();
+        assertNull(encoding);
+    }
+
+    @Test
+    public void testGetDocumentURI() {
+        assertNull(document.getDocumentURI());
+    }
+
+    @Test
+    public void testGetDomConfig() {
+        DOMConfiguration domConfig = document.getDomConfig();
+        assertNotNull(domConfig);
     }
 }

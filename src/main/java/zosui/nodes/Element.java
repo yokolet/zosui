@@ -106,6 +106,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public Node getFirstChild() { return hasChildNodes() ? childNodes.getFirst() : null; }
     @Override public Node getLastChild() { return hasChildNodes() ? childNodes.getLast() : null; }
     @Override public NamedNodeMap getAttributes() { return attributes; }
+    @Override public org.w3c.dom.Document getOwnerDocument() { return ownerDocument(); }
     @Override public Node cloneNode(boolean deep) {
         if (deep) { return this.clone(); }
         else { return this.shallowClone(); }
@@ -1604,9 +1605,9 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      *
      * @return all elements
      */
-//    public Elements getAllElements() {
-//        return Collector.collect(new Evaluator.AllElements(), this);
-//    }
+    public Elements getAllElements() {
+        return Collector.collect(new Evaluator.AllElements(), this);
+    }
 
     /**
      Gets the <b>normalized, combined text</b> of this element and all its children. Whitespace is normalized and

@@ -80,7 +80,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     @Override public Node getPreviousSibling() { return previousSibling(); }
     @Override public Node getNextSibling() { return nextSibling(); }
     public abstract NamedNodeMap getAttributes();
-    @Override public org.w3c.dom.Document getOwnerDocument() { return ownerDocument(); }
+    public abstract org.w3c.dom.Document getOwnerDocument();
     @Override public Node insertBefore(org.w3c.dom.Node newChild, org.w3c.dom.Node refChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
@@ -114,7 +114,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     public abstract String getBaseURI();
     @Override public short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException {
         if (isSameNode(other)) { return 0; }
-        if (getOwnerDocument() != other.getOwnerDocument()) { return Node.DOCUMENT_POSITION_DISCONNECTED; }
+        if (findOwnerDocument(this) != findOwnerDocument(other)) { return Node.DOCUMENT_POSITION_DISCONNECTED; }
         List<org.w3c.dom.Node> ancestors = new ArrayList<>();
 
         // test if this node is an ancestor of the other
@@ -181,6 +181,9 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     protected static boolean areSame(final String a, final String b) {
         if (a == null) { return b == null; }
         return a.equals(b);
+    }
+    protected org.w3c.dom.Document findOwnerDocument(org.w3c.dom.Node node) {
+        return node instanceof org.w3c.dom.Document ? (org.w3c.dom.Document) node : node.getOwnerDocument();
     }
 
     // jsoup api

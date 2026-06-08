@@ -31,6 +31,7 @@ public abstract class LeafNode extends Node implements CharacterData {
     @Override public Node getFirstChild() { return null; }
     @Override public Node getLastChild() { return null; }
     @Override public NamedNodeMap getAttributes() { return attributes(); }
+    @Override public org.w3c.dom.Document getOwnerDocument() { return ownerDocument(); }
     @Override public boolean hasChildNodes() { return false; }
     @Override public String getNamespaceURI() { return null; }
     @Override public String getPrefix() { return null; }

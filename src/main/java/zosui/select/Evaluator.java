@@ -111,4 +111,24 @@ public abstract class Evaluator {
             return String.format("#%s", id);
         }
     }
+
+    /**
+     * Evaluator for any / all element matching
+     */
+    public static final class AllElements extends Evaluator {
+
+        @Override
+        public boolean matches(Element root, Element element) {
+            return true;
+        }
+
+        @Override protected int cost() {
+            return 10;
+        }
+
+        @Override
+        public String toString() {
+            return "*";
+        }
+    }
 }
