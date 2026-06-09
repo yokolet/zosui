@@ -50,6 +50,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     private static final Pattern ClassSplit = Pattern.compile("\\s+");
     static final String BaseUriKey = Attributes.internalKey("baseUri");
     Tag tag;
+    boolean noNamespace = true;
     NodeList childNodes;
     @Nullable Attributes attributes; // field is nullable but all methods for attributes are non-null
 
@@ -60,6 +61,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      */
     public Element(String tag, String namespace) {
         this(Tag.valueOf(tag, namespace, ParseSettings.preserveCase), null);
+        noNamespace = false;
     }
 
     /**
@@ -111,13 +113,15 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         if (deep) { return this.clone(); }
         else { return this.shallowClone(); }
     }
-    @Override public String getNamespaceURI() { return tag.namespace(); }
-    @Override public String getPrefix() { return tag.prefix(); }
-    @Override public String getLocalName() { return tag.localName(); }
+    @Override public String getNamespaceURI() { return noNamespace ? null : tag.namespace(); }
+    @Override public String getPrefix() { return noNamespace ? null : tag.prefix(); }
+    @Override public String getLocalName() { return noNamespace ? null : tag.localName(); }
     @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
     @Override public String getTextContent() throws DOMException { return text(); }
-    @Override public String lookupPrefix(String namespaceURI) { return tag.namespace().equals(namespaceURI) ? tag.prefix() : null; }
-    @Override public boolean isDefaultNamespace(String namespaceURI) { return namespaceURI.equals(NamespaceHtml); }
+    @Override public String lookupPrefix(String namespaceURI) {
+        return !noNamespace && tag.namespace().equals(namespaceURI) ? tag.prefix() : null;
+    }
+    @Override public boolean isDefaultNamespace(String namespaceURI) { return !noNamespace &&  namespaceURI.equals(NamespaceHtml); }
 
     @Override public String getTagName() { return tagName(); }
     @Override public String getAttribute(String name) {

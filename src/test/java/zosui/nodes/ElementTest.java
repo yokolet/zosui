@@ -97,4 +97,125 @@ public class ElementTest {
         assertEquals(1, attributes.getLength());
         assertEquals("id", attributes.item(0).getNodeName());
     }
+
+    @Test
+    public void testGetAttributesOfDiv() {
+        org.w3c.dom.Element div = (Element) document.getElementsByTagName("div").item(0);
+        org.w3c.dom.NamedNodeMap attributes = div.getAttributes();
+        assertEquals(1, attributes.getLength());
+        assertEquals("class", attributes.item(0).getNodeName());
+        assertEquals("baz", attributes.item(0).getNodeValue());
+    }
+
+    @Test
+    public void testGetAttributesOfA() {
+        org.w3c.dom.Element a = (Element) document.getElementsByTagName("a").item(0);
+        org.w3c.dom.NamedNodeMap attributes = a.getAttributes();
+        assertEquals(2, attributes.getLength());
+        assertEquals("foo", attributes.getNamedItem("href").getNodeValue());
+        assertEquals("bar", attributes.getNamedItem("class").getNodeValue());
+    }
+
+    @Test
+    public void testGetOwnerDocument() {
+        org.w3c.dom.Document ownerDocument = root.getOwnerDocument();
+        assertEquals(document, ownerDocument);
+        ownerDocument = body.getOwnerDocument();
+        assertEquals(document, ownerDocument);
+    }
+
+    @Test
+    public void testHasChildNodes() {
+        assertTrue(root.hasChildNodes());
+        assertTrue(body.hasChildNodes());
+        org.w3c.dom.Element head = (Element) document.getElementsByTagName("head").item(0);
+        assertFalse(head.hasChildNodes());
+    }
+
+    @Test
+    public void testCloneNodeOfRoot() {
+        Node cloned = root.cloneNode(true);
+        assertInstanceOf(Element.class, cloned);
+        Element clonedElm = (Element) cloned;
+        assertFalse(root.isSameNode(clonedElm));
+        assertEquals(2, clonedElm.getChildNodes().getLength());
+        assertEquals(0, clonedElm.getAttributes().getLength());
+    }
+
+    @Test
+    public void testCloneNodeOfA() {
+        org.w3c.dom.Element a = (Element) document.getElementsByTagName("a").item(0);
+        Node cloned = a.cloneNode(true);
+        assertInstanceOf(Element.class, cloned);
+        Element clonedElm = (Element) cloned;
+        assertFalse(a.isSameNode(clonedElm));
+        assertEquals(1, clonedElm.getChildNodes().getLength());
+        assertEquals(2, clonedElm.getAttributes().getLength());
+    }
+
+    @Test
+    public void testIsSupported() {
+        assertFalse(document.isSupported("feature", "version"));
+    }
+
+    @Test
+    public void testGetNamespaceURI() {
+        assertNull(root.getNamespaceURI());
+        assertNull(body.getNamespaceURI());
+    }
+
+    @Test
+    public void testGetPrefix() {
+        assertNull(root.getPrefix());
+        assertNull(body.getPrefix());
+    }
+
+    @Test
+    public void testGetLocalName() {
+        assertNull(root.getLocalName());
+        assertNull(body.getLocalName());
+    }
+
+    @Test
+    public void testHasAttributes() {
+        assertFalse(root.hasAttributes());
+        assertTrue(body.hasAttributes());
+    }
+
+    @Test
+    public void testGetBaseURI() {
+        assertNull(root.getBaseURI());
+        assertNull(body.getBaseURI());
+    }
+
+    @Test
+    public void testCompareDocumentPositions() {
+        short position = root.compareDocumentPosition(body);
+        assertEquals(Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING, position);
+        position = body.compareDocumentPosition(root);
+        assertEquals(Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING, position);
+    }
+
+    @Test
+    public void testGetTextContent() {
+        assertEquals("first", root.getTextContent());
+    }
+
+    @Test
+    public void testIsSameNode() {
+        assertTrue(root.isSameNode(root));
+        assertFalse(root.isSameNode(body));
+        Element cloned = (Element) root.cloneNode(false);
+        assertFalse(root.isSameNode(cloned));
+    }
+
+    @Test
+    public void testLookupPrefix() {
+        assertNull(root.lookupPrefix("http://www.w3.org/1999/xhtml"));
+    }
+
+    @Test
+    public void testIsDefaultNamespace() {
+        assertFalse(root.isDefaultNamespace("http://www.w3.org/1999/xhtml"));
+    }
 }
