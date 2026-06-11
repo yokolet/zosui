@@ -126,7 +126,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public String getTagName() { return tagName(); }
     @Override public String getAttribute(String name) {
         Attribute attr = attribute(name);
-        return attr == null ? null : attr.getValue();
+        return attr == null ? "" : attr.getValue();
     }
     @Override public void setAttribute(String name, String value) throws DOMException { attr(name, value); }
     @Override public void removeAttribute(String name) throws DOMException { removeAttr(name); }
@@ -137,7 +137,11 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public Attr removeAttributeNode(Attr newAttr) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
-    @Override public org.w3c.dom.NodeList getElementsByTagName(String name) { return getElementsByTag(name); }
+    @Override public org.w3c.dom.NodeList getElementsByTagName(String name) {
+        if (name == null || name.equals("")) { return EmptyNodeList; }
+        if (name.equals("*")) { return getAllElementsExceptSelf(); }
+        return getElementsByTag(name);
+    }
     @Override public String getAttributeNS(String namespaceURI, String localName) throws DOMException {
         return getAttribute(localName);
     }
@@ -1611,6 +1615,17 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      */
     public Elements getAllElements() {
         return Collector.collect(new Evaluator.AllElements(), this);
+    }
+
+    /**
+     * Find all elements under this element (excluding self, and children of children).
+     *
+     * @return all elements
+     */
+    public Elements getAllElementsExceptSelf() {
+        Elements allElements = Collector.collect(new Evaluator.AllElements(), this);
+        List<Element> exceptSelf = allElements.subList(1, allElements.size());
+        return new Elements(exceptSelf);
     }
 
     /**

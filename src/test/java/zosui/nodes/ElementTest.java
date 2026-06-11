@@ -218,4 +218,87 @@ public class ElementTest {
     public void testIsDefaultNamespace() {
         assertFalse(root.isDefaultNamespace("http://www.w3.org/1999/xhtml"));
     }
+
+    @Test
+    public void testLookupNamespaceURI() {
+        assertNull(root.lookupNamespaceURI(""));
+        assertNull(root.lookupNamespaceURI(null));
+    }
+
+    @Test
+    public void testIsEqualNode() {
+        assertTrue(root.isEqualNode(root));
+        assertFalse(root.isEqualNode(body));
+        Element cloned = (Element) root.cloneNode(true);
+        assertTrue(root.isEqualNode(cloned));
+        cloned = (Element) body.cloneNode(false);
+        assertFalse(root.isEqualNode(cloned));
+    }
+
+    @Test
+    public void testUserData() {
+        root.setUserData("key", "value", null);
+        assertEquals("value", root.getUserData("key"));
+        root.setUserData("key", null, null);
+        assertNull(root.getUserData("key"));
+    }
+
+    @Test
+    public void testGetTagName() {
+        assertEquals("html", root.getTagName());
+        assertEquals("body", body.getTagName());
+    }
+
+    @Test
+    public void testGetAttribute() {
+        assertEquals("", root.getAttribute(null));
+        assertEquals("", root.getAttribute("class"));
+        assertEquals("myBody", body.getAttribute("id"));
+    }
+
+    @Test
+    public void testGetAttributeNode() {
+        assertNull(root.getAttributeNode(null));
+        assertNull(root.getAttributeNode("class"));
+        org.w3c.dom.Attr attr = body.getAttributeNode("id");
+        assertEquals("id", attr.getName());
+        assertEquals("myBody", attr.getValue());
+    }
+
+    @Test
+    public void testGetElementsByTagNameOfRoot() {
+        org.w3c.dom.NodeList list = root.getElementsByTagName("head");
+        assertEquals(1, list.getLength());
+        assertEquals("head", list.item(0).getNodeName());
+        list = root.getElementsByTagName("a");
+        assertEquals(1, list.getLength());
+        assertEquals("a", list.item(0).getNodeName());
+        list = root.getElementsByTagName("");
+        assertEquals(0, list.getLength());
+        list = root.getElementsByTagName("*");
+        assertEquals(4, list.getLength());
+    }
+
+    @Test
+    public void testGetElementsByTagNameOfBody() {
+        org.w3c.dom.NodeList list = body.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        assertEquals("div", list.item(0).getNodeName());
+        list = body.getElementsByTagName("a");
+        assertEquals(1, list.getLength());
+        assertEquals("a", list.item(0).getNodeName());
+        list = body.getElementsByTagName("");
+        assertEquals(0, list.getLength());
+        list = body.getElementsByTagName("html");
+        assertEquals(0, list.getLength());
+        list = body.getElementsByTagName("*");
+        assertEquals(2, list.getLength());
+    }
+
+    @Test
+    public void testGetAttributeNS() {
+        assertEquals("myBody", body.getAttributeNS(null, "id"));
+        assertEquals("", body.getAttributeNS(null, "class"));
+        assertEquals("", body.getAttributeNS("http://www.w3.org/1999/xhtml", "id"));
+    }
 }
