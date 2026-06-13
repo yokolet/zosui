@@ -277,6 +277,10 @@ public class ElementTest {
         assertEquals(0, list.getLength());
         list = root.getElementsByTagName("*");
         assertEquals(4, list.getLength());
+        assertEquals("head", list.item(0).getNodeName());
+        assertEquals("body", list.item(1).getNodeName());
+        assertEquals("div", list.item(2).getNodeName());
+        assertEquals("a", list.item(3).getNodeName());
     }
 
     @Test
@@ -293,6 +297,8 @@ public class ElementTest {
         assertEquals(0, list.getLength());
         list = body.getElementsByTagName("*");
         assertEquals(2, list.getLength());
+        assertEquals("div", list.item(0).getNodeName());
+        assertEquals("a", list.item(1).getNodeName());
     }
 
     @Test
@@ -300,5 +306,49 @@ public class ElementTest {
         assertEquals("myBody", body.getAttributeNS(null, "id"));
         assertEquals("", body.getAttributeNS(null, "class"));
         assertEquals("", body.getAttributeNS("http://www.w3.org/1999/xhtml", "id"));
+    }
+
+    @Test
+    public void testGetAttributeNodeNS() {
+        org.w3c.dom.Attr attr = body.getAttributeNodeNS(null, "id");
+        assertNotNull(attr);
+        assertEquals("myBody", attr.getValue());
+        attr = body.getAttributeNodeNS(null, "class");
+        assertNull(attr);
+        attr = body.getAttributeNodeNS("http://www.w3.org/1999/xhtml", "id");
+        assertNull(attr);
+    }
+
+    @Test
+    public void testGetElementsByTagNameNS() {
+        org.w3c.dom.NodeList list = root.getElementsByTagNameNS(null, "div");
+        assertEquals(0, list.getLength());
+        list = root.getElementsByTagNameNS(null, "*");
+        assertEquals(4, list.getLength());
+        list = root.getElementsByTagNameNS("*", "div");
+        assertEquals(0, list.getLength());
+        list = root.getElementsByTagNameNS("*", "*");
+        assertEquals(4, list.getLength());
+        assertEquals("head", list.item(0).getNodeName());
+        assertEquals("body", list.item(1).getNodeName());
+        assertEquals("div", list.item(2).getNodeName());
+        assertEquals("a", list.item(3).getNodeName());
+        list = root.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "*");
+        assertEquals(0, list.getLength());
+    }
+
+    @Test
+    public void testHasAttribute() {
+        assertFalse(root.hasAttribute(null));
+        assertFalse(root.hasAttribute("id"));
+        assertTrue(body.hasAttribute("id"));
+    }
+
+    @Test
+    public void testHasAttributeNS() {
+        assertFalse(root.hasAttributeNS(null, null));
+        assertFalse(root.hasAttributeNS(null, "id"));
+        assertTrue(body.hasAttributeNS(null, "id"));
+        assertFalse(body.hasAttributeNS("http://www.w3.org/1999/xhtml", "id"));
     }
 }

@@ -143,7 +143,9 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         return getElementsByTag(name);
     }
     @Override public String getAttributeNS(String namespaceURI, String localName) throws DOMException {
-        return getAttribute(localName);
+        if (namespaceURI == null) { return getAttribute(localName); }
+        if (!noNamespace && namespaceURI.equals(NamespaceHtml)) { return getAttribute(localName); }
+        else { return ""; }
     }
     @Override public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
         setAttribute(qualifiedName, value);
@@ -152,16 +154,24 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         removeAttribute(localName);
     }
     @Override public Attr getAttributeNodeNS(String namespaceURI, String localName) throws DOMException {
-        return getAttributeNode(localName);
+        if (namespaceURI == null) { return getAttributeNode(localName); }
+        if (!noNamespace && namespaceURI.equals(NamespaceHtml)) { return getAttributeNode(localName); }
+        else { return null; }
     }
     @Override public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
         return setAttributeNode(newAttr);
     }
     @Override public org.w3c.dom.NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        return getElementsByTagName(localName);
+        Validate.notEmpty(localName);
+        if ((namespaceURI == null || namespaceURI.equals("*")) && localName.equals("*")) { return getAllElementsExceptSelf(); }
+        else { return EMPTY_LIST; }
     }
     @Override public boolean hasAttribute(String name) { return attribute(name) != null; }
-    @Override public boolean hasAttributeNS(String namespaceURI, String localName) { return attribute(localName) != null; }
+    @Override public boolean hasAttributeNS(String namespaceURI, String localName) {
+        if (noNamespace && namespaceURI != null) { return false; }
+        if (namespaceURI == null || tag.namespace().equals(namespaceURI)) { return attribute(localName) != null; }
+        else { return false; }
+    }
     @Override public TypeInfo getSchemaTypeInfo() { return null; }
     @Override public void setIdAttribute(String name, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
@@ -1624,8 +1634,8 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      */
     public Elements getAllElementsExceptSelf() {
         Elements allElements = Collector.collect(new Evaluator.AllElements(), this);
-        List<Element> exceptSelf = allElements.subList(1, allElements.size());
-        return new Elements(exceptSelf);
+        allElements.deselect(0);
+        return allElements;
     }
 
     /**
