@@ -68,7 +68,7 @@ public class Attribute implements Cloneable, Attr  {
     @Override public String getNodeValue() throws DOMException { return getValue(); }
     @Override public void setNodeValue(String value) throws DOMException { setValue(value); }
     @Override public short getNodeType() { return Node.ATTRIBUTE_NODE; };
-    @Override public Node getParentNode() { return parent != null ? parent.ownerElement : null; }
+    @Override public Node getParentNode() { return null; }
     @Override public NodeList getChildNodes() { return zosui.nodes.Node.EMPTY_LIST; }
     @Override public Node getFirstChild() { return null; };
     @Override public Node getLastChild() { return null; };
@@ -96,33 +96,54 @@ public class Attribute implements Cloneable, Attr  {
         throw new RuntimeException("Will be implemented later");
     }
     @Override public boolean isSupported(String feature, String version) { return false; }
-    @Override public String getNamespaceURI() { return namespace(); }
-    @Override public String getPrefix() { return prefix(); }
+    @Override public String getNamespaceURI() {
+        String namespaceURI = namespace();
+        return (namespaceURI == null || namespaceURI.isEmpty()) ? null : namespaceURI;
+    }
+    @Override public String getPrefix() {
+        String prefix = prefix();
+        return (prefix == null || prefix.isEmpty()) ? null : prefix;
+    }
     @Override public void setPrefix(String prefix) throws DOMException {
         throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "HTML doesn't have a prefix");
     }
-    @Override public String getLocalName() { return localName(); }
+    @Override public String getLocalName() {
+        String namespaceURI = namespace();
+        return (namespaceURI == null || namespaceURI.isEmpty()) ? null : localName();
+    }
     @Override public boolean hasAttributes() { return false; }
-    @Override public String getBaseURI() { return parent != null ? parent.ownerElement.baseUri() : null; }
+    @Override public String getBaseURI() {
+        if (parent == null || parent.ownerElement == null) { return null; }
+        String baseURI = parent.ownerElement.baseUri();
+        return (baseURI == null || baseURI.isEmpty()) ? null : baseURI;
+    }
     @Override public short compareDocumentPosition(org.w3c.dom.Node other) throws DOMException {
         if (isSameNode(other)) { return 0; }
         if (getOwnerDocument() != other.getOwnerDocument()) { return Node.DOCUMENT_POSITION_DISCONNECTED; }
+        if (other instanceof org.w3c.dom.Attr && this.getOwnerElement() == ((Attr) other).getOwnerElement()) {
+            int thisIdx = parent.indexOfKey(this.getNodeName());
+            int otherIdx = parent.indexOfKey(other.getNodeName());
+            if ( thisIdx < otherIdx) { return Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_FOLLOWING; }
+            else { return Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_PRECEDING; }
+        }
+
         List<org.w3c.dom.Node> ancestors = new ArrayList<>();
 
         // test if this node is an ancestor of the other
-        ancestors.add(other);
-        org.w3c.dom.Node parent = other.getParentNode();
+        org.w3c.dom.Node node = other instanceof Attr ? ((Attr) other).getOwnerElement() : other;
+        ancestors.add(node);
+        org.w3c.dom.Node parent = node.getParentNode();
         while (parent != null) {
-            if (parent == this) { return Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING; }
+            if (parent == this.getOwnerElement()) { return Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING; }
             ancestors.add(parent);
             parent = parent.getParentNode();
         }
 
         // test if the other is an ancestor of this node while checking a common ancestor
-        parent = getParentNode();
+        parent = getOwnerElement();
         int count = 1;
         while (parent != null) {
-            if (parent == other) { return Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING; }
+            if (parent == node) { return Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING; }
             if (ancestors.contains(parent)) {
                 // found the common ancestor
                 int pos = ancestors.indexOf(parent);
@@ -135,7 +156,7 @@ public class Attribute implements Cloneable, Attr  {
         return Node.DOCUMENT_POSITION_DISCONNECTED;
     }
 
-    @Override public String getTextContent() throws DOMException { return ""; }
+    @Override public String getTextContent() throws DOMException { return getValue(); }
     @Override public void setTextContent(String textContent) throws DOMException { /* does nothing */ }
     @Override public boolean isSameNode(org.w3c.dom.Node other) {
         return this == other;
@@ -309,7 +330,7 @@ public class Attribute implements Cloneable, Attr  {
      was not tracked.
      @see zosui.parser.Parser#setTrackPosition(boolean)
      @see Attributes#sourceRange(String)
-     @see Node#sourceRange()
+     //@see Node#sourceRange()
      @see Element#endSourceRange()
      @since 1.17.1
      */

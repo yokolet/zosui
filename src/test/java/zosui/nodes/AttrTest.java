@@ -75,4 +75,83 @@ public class AttrTest {
     public void testGetPreviousSibling() {
         assertNull(bodyAttrs.item(0).getPreviousSibling());
     }
+
+    @Test
+    public void testGetAttributes() {
+        assertNull(bodyAttrs.item(0).getAttributes());
+    }
+
+    @Test
+    public void testGetOwnerDocument() {
+        assertEquals(document, bodyAttrs.item(0).getOwnerDocument());
+    }
+
+    @Test
+    public void testHasChildNodes() {
+        assertFalse(bodyAttrs.item(0).hasChildNodes());
+    }
+
+    @Test
+    public void testCloneNode() {
+        org.w3c.dom.Node node = bodyAttrs.item(0).cloneNode(true);
+        assertInstanceOf(org.w3c.dom.Attr.class, node);
+        org.w3c.dom.Attr attr = (org.w3c.dom.Attr)node;
+        assertNotSame(attr, bodyAttrs.item(0));
+        assertSame(attr.getNodeValue(), bodyAttrs.item(0).getNodeValue());
+    }
+
+    @Test
+    public void testIsSupported() {
+        assertFalse(bodyAttrs.item(0).isSupported("feature", "version"));
+    }
+
+    @Test
+    public void testGetNamespaceURI() {
+        assertNull(bodyAttrs.item(0).getNamespaceURI());
+    }
+
+    @Test
+    void testGetPrefix() {
+        assertNull(bodyAttrs.item(0).getPrefix());
+    }
+
+    @Test
+    void testGetLocalName() {
+        assertNull(bodyAttrs.item(0).getLocalName());
+    }
+
+    @Test
+    void testHasAttributes() {
+        assertFalse(bodyAttrs.item(0).hasAttributes());
+    }
+
+    @Test
+    void testGetBaseURI() {
+        assertNull(bodyAttrs.item(0).getBaseURI());
+    }
+
+    @Test
+    public void testCompareDocumentPosition() {
+        short result = bodyAttrs.item(0).compareDocumentPosition(body);
+        assertEquals(Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING, result);
+        result = anchorAttrs.item(0).compareDocumentPosition(anchorAttrs.item(1));
+        assertEquals(Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_FOLLOWING, result);
+        result = bodyAttrs.item(0).compareDocumentPosition(anchorAttrs.item(0));
+        assertEquals(Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING, result);
+    }
+
+    @Test
+    public void testGetTextContent() {
+        assertEquals("myBody", bodyAttrs.item(0).getTextContent());
+        assertEquals("foo", anchorAttrs.getNamedItem("href").getTextContent());
+    }
+
+    @Test
+    public void testIsSameNode() {
+        org.w3c.dom.Attr attr = (org.w3c.dom.Attr)bodyAttrs.item(0);
+        assertTrue(attr.isSameNode(attr));
+        assertFalse(attr.isSameNode(body));
+        org.w3c.dom.Attr cloned = (org.w3c.dom.Attr)attr.cloneNode(false);
+        assertFalse(attr.isSameNode(cloned));
+    }
 }

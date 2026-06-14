@@ -86,6 +86,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         Validate.notNull(tag);
         childNodes = EmptyNodeList;
         this.attributes = attributes;
+        if (this.attributes != null) { this.attributes.ownerElement = this; }
         this.tag = tag;
         if (!StringUtil.isBlank(baseUri)) this.setBaseUri(baseUri);
     }
@@ -217,8 +218,10 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
 
     @Override
     public Attributes attributes() {
-        if (attributes == null) // not using hasAttributes, as doesn't clear warning
+        if (attributes == null) { // not using hasAttributes, as doesn't clear warning
             attributes = new Attributes();
+            attributes.setOwnerElement(this);
+        }
         return attributes;
     }
 
