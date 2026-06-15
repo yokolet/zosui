@@ -63,6 +63,13 @@ public class Attribute implements Cloneable, Attr  {
         this.parent = parent;
     }
 
+    // org.w3c.dom.TypeInfo implementation
+    public static final TypeInfo EMPTY_TYPE_INFO = new TypeInfo() {
+        @Override public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, int derivationMethod) { return false; }
+        @Override public String getTypeName() { return null; }
+        @Override public String getTypeNamespace() { return "http://www.w3.org/1999/xhtml"; }
+    };
+
     // org.w3c.dom.Node and org.w3c.dom.Attr methods
     @Override public String getNodeName() { return getKey(); };
     @Override public String getNodeValue() throws DOMException { return getValue(); }
@@ -161,11 +168,14 @@ public class Attribute implements Cloneable, Attr  {
     @Override public boolean isSameNode(org.w3c.dom.Node other) {
         return this == other;
     }
-    @Override public String lookupPrefix(String namespaceURI) { return namespaceURI.equals(namespace()) ? prefix() : ""; }
+    @Override public String lookupPrefix(String namespaceURI) { return namespaceURI.equals(namespace()) ? prefix() : null; }
     @Override public boolean isDefaultNamespace(String namespaceURI) {
-        return namespaceURI.equals("http://www.w3.org/1999/xhtml");
+        return !getOwnerElement().noNamespace && namespaceURI.equals("http://www.w3.org/1999/xhtml");
     }
-    @Override public String lookupNamespaceURI(String prefix) { return prefix.equals(prefix()) ? namespace() : ""; }
+    @Override public String lookupNamespaceURI(String prefix) {
+        if (prefix == null)  { return getOwnerElement().noNamespace ? null : "http://www.w3.org/1999/xhtml"; }
+        return !getOwnerElement().noNamespace && prefix.equals(prefix()) ? namespace() : null;
+    }
     @Override public boolean isEqualNode(org.w3c.dom.Node arg) {
         if (arg == null) { return false; }
         if (isSameNode(arg)) { return true; }
@@ -195,12 +205,12 @@ public class Attribute implements Cloneable, Attr  {
     }
 
     @Override public String getName() { return getKey(); }
-    @Override public boolean getSpecified() { return false; }
+    @Override public boolean getSpecified() { return !getValue().isEmpty(); }
     // @Override public String getValue() { return val; } // exactly the same implementation exists
     // @Override void setValue(String value) throws DOMException { val = value; } // exactly the same implementation exists
     @Override public Element getOwnerElement() { return parent != null ? parent.ownerElement : null; }
-    @Override public TypeInfo getSchemaTypeInfo() { return null; }
-    @Override public boolean isId() { return getKey().equals("id"); }
+    @Override public TypeInfo getSchemaTypeInfo() { return EMPTY_TYPE_INFO; }
+    @Override public boolean isId() { return getKey().equalsIgnoreCase("id"); }
 
     /**
      Get the attribute's key (aka name).

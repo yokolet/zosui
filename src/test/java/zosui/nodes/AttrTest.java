@@ -154,4 +154,75 @@ public class AttrTest {
         org.w3c.dom.Attr cloned = (org.w3c.dom.Attr)attr.cloneNode(false);
         assertFalse(attr.isSameNode(cloned));
     }
+
+    @Test
+    public void testLookupPrefix() {
+        assertNull(bodyAttrs.item(0).lookupPrefix("http://www.w3.org/1999/xhtml"));
+    }
+
+    @Test
+    public void testIsDefaultNamespace() {
+        assertFalse(bodyAttrs.item(0).isDefaultNamespace("http://www.w3.org/1999/xhtml"));
+    }
+
+    @Test
+    public void testLookupNamespace() {
+        assertNull(bodyAttrs.item(0).lookupNamespaceURI(null));
+        assertNull(bodyAttrs.item(0).lookupNamespaceURI(""));
+    }
+
+    @Test
+    public void testIsEqualNode() {
+        org.w3c.dom.Attr attrHref = (org.w3c.dom.Attr)anchorAttrs.getNamedItem("href");
+        org.w3c.dom.Attr attrClass = (org.w3c.dom.Attr)anchorAttrs.getNamedItem("class");
+        assertTrue(attrHref.isEqualNode(attrHref));
+        assertFalse(attrHref.isEqualNode(attrClass));
+        org.w3c.dom.Attr clonedHref = (org.w3c.dom.Attr)attrHref.cloneNode(true);
+        assertFalse(attrHref.isSameNode(clonedHref));
+        assertTrue(attrHref.isEqualNode(clonedHref));
+    }
+
+    @Test
+    public void testUserData() {
+        org.w3c.dom.Attr attr = (org.w3c.dom.Attr)bodyAttrs.item(0);
+        attr.setUserData("key", "value", null);
+        assertEquals("value", attr.getUserData("key"));
+        attr.setUserData("key", null, null);
+        assertNull(attr.getUserData("key"));
+    }
+
+    @Test
+    public void testGetName() {
+        assertEquals("id", ((org.w3c.dom.Attr)bodyAttrs.item(0)).getName());
+    }
+
+    @Test
+    public void testGetSpecified() {
+        assertTrue(((org.w3c.dom.Attr)bodyAttrs.item(0)).getSpecified());
+    }
+
+    @Test
+    public void testGetValue() {
+        assertEquals("myBody", ((org.w3c.dom.Attr)bodyAttrs.item(0)).getValue());
+    }
+
+    @Test
+    public void testGetOwnerElement() {
+        org.w3c.dom.Attr attr = (org.w3c.dom.Attr)bodyAttrs.item(0);
+        assertSame(attr.getOwnerElement(), body);
+        attr = (org.w3c.dom.Attr)anchorAttrs.item(0);
+        assertSame(attr.getOwnerElement(), anchor);
+        assertNotSame(attr.getOwnerElement(), body);
+    }
+
+    @Test
+    public void testGetSchemaTypeInfo() {
+        org.w3c.dom.TypeInfo typeInfo = ((org.w3c.dom.Attr)bodyAttrs.item(0)).getSchemaTypeInfo();
+        assertNotNull(typeInfo);
+    }
+
+    @Test
+    public void testIsId() {
+        assertTrue(((org.w3c.dom.Attr)bodyAttrs.item(0)).isId());
+    }
 }
