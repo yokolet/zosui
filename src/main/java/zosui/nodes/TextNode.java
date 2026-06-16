@@ -29,10 +29,11 @@ public class TextNode extends LeafNode implements Text {
     @Override public short getNodeType() { return Node.TEXT_NODE; }
     @Override public String getTextContent()  throws DOMException { return getNodeValue(); }
     @Override public boolean isDefaultNamespace(String namespaceURI) { return namespaceURI == null; }
-    @Override public String getData() throws DOMException { return text(); }
-    @Override public int getLength() { return text().length(); }
+    @Override public String getData() throws DOMException { return getNodeValue(); }
+    @Override public int getLength() { return getNodeValue().length(); }
     @Override public String substringData(int offset, int count) throws DOMException {
-        return text().substring(offset, offset + count);
+        count = Math.min(count, getNodeValue().length() - offset);
+        return getNodeValue().substring(offset, offset + count);
     }
     //@Override public Text splitText(int offest) throws DOMException { return null; }
     @Override public boolean isElementContentWhitespace() { return !getWholeText().equals(text()); }

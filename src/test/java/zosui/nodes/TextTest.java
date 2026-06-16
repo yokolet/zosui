@@ -185,6 +185,28 @@ public class TextTest {
         assertNull(divText1.getUserData("key"));
     }
 
+    @Test
+    public void testGetData() {
+        assertEquals("   content  ", divText1.getData());
+        assertEquals("   ", divText2.getData());
+        assertEquals("first", anchorText.getData());
+    }
+
+    @Test
+    public void testGetLength() {
+        assertEquals(12, divText1.getLength());
+        assertEquals(3, divText2.getLength());
+        assertEquals(5, anchorText.getLength());
+    }
+
+    @Test
+    public void testSubstringData() {
+        String substring = divText1.substringData(3, 100);
+        assertEquals("content  ", substring);
+        substring = divText2.substringData(2, 100);
+        assertEquals(" ", substring);
+    }
+
     @Disabled("Feature under development. The whitespace appears between 'structural' elements such as li.")
     @Test
     public void testIsElementContentWhitespace() {
