@@ -27,7 +27,8 @@ public class TextNode extends LeafNode implements Text {
     @Override public String getNodeName() { return "#text"; }
     @Override public String getNodeValue() { return value instanceof String ? (String) value : null; }
     @Override public short getNodeType() { return Node.TEXT_NODE; }
-    @Override public String getTextContent()  throws DOMException { return text(); }
+    @Override public String getTextContent()  throws DOMException { return getNodeValue(); }
+    @Override public boolean isDefaultNamespace(String namespaceURI) { return namespaceURI == null; }
     @Override public String getData() throws DOMException { return text(); }
     @Override public int getLength() { return text().length(); }
     @Override public String substringData(int offset, int count) throws DOMException {
