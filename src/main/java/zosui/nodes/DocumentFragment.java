@@ -1,39 +1,51 @@
 package zosui.nodes;
 
 import org.w3c.dom.NamedNodeMap;
-import zosui.parser.Parser;
-import zosui.parser.Tag;
+import zosui.parser.*;
 
-import static zosui.parser.Parser.NamespaceHtml;
+import java.util.List;
+import java.util.Map;
 
 public class DocumentFragment extends Element implements org.w3c.dom.DocumentFragment {
-    private Parser parser; // the parser used to parse this document
-    private final String location;
+    private final ParseErrorList errorList;
 
     /**
-     Create a new, empty Document, in the specified namespace.
-     @param namespace the namespace of this Document's root node.
+     Create a new, empty DocumentFragment, from a given html string.
+     @param html the fragment of HTML to parse
+     @param context (optional) the element that this HTML fragment is being parsed for.
      @param baseUri base URI of document
+     @param options a map of options
      @see zosui.parser.Parser#parse
      */
-    public DocumentFragment(String namespace, String baseUri) {
-        this(namespace, baseUri, Parser.htmlParser()); // default HTML parser, but overridable
-    }
-
-    private DocumentFragment(String namespace, String baseUri, Parser parser) {
-        super(new Tag("body", namespace), baseUri);
-        this.location = baseUri;
-        this.parser = parser;
+    public DocumentFragment(String html, String context, String baseUri, Map<String, Object> options) {
+        this(html, context, baseUri, Parser.htmlParser(), options); // default HTML parser, but overridable
     }
 
     /**
-     Create a new, empty Document, in the HTML namespace.
+     Create a new, empty DocumentFragment, from a given html string.
+     @param html the fragment of HTML to parse
+     @param context (optional) the element that this HTML fragment is being parsed for.
      @param baseUri base URI of document
+     @param parser the parser to parse the input
+     @param options a map of options
      @see zosui.parser.Parser#parse
-     @see #DocumentFragment(String namespace, String baseUri)
      */
-    public DocumentFragment(String baseUri) {
-        this(NamespaceHtml, baseUri);
+    private DocumentFragment(String html, String context, String baseUri, Parser parser, Map<String, Object> options) {
+        context = context != null ? context : (options.containsKey("context") ? (String) options.get("context") : "body");
+        super(new Tag(context), baseUri);
+        int max_errors = options.containsKey("max_errors") ? (int) options.get("max_errors") : 0;
+        parser.setTrackErrors(max_errors);
+        parser.settings(createSettings(options));
+        List<Node> children = parser.parseFragmentInput(html, this, "");
+        this.appendChildren(children);
+        errorList = parser.getErrors();
+    }
+    private ParseSettings createSettings(Map<String, Object> options) {
+        ParseSettings settings = ParseSettings.htmlDefault;
+        if (options.containsKey("parse_noscript_content_as_text")) {
+            settings.setNoscriptContentAsText((boolean)options.get("parse_noscript_content_as_text"));
+        }
+        return settings;
     }
 
     @Override public String getNodeName() { return "#document-fragment"; }
@@ -49,4 +61,6 @@ public class DocumentFragment extends Element implements org.w3c.dom.DocumentFra
     @Override public String getBaseURI() { return baseUri().trim().equals("") ? null : baseUri().trim(); }
     @Override public String lookupPrefix(String namespaceURI) { return null; }
     @Override public boolean isDefaultNamespace(String namespaceURI) { return false; }
+
+    public List<ParseError> getErrors() { return errorList; }
 }

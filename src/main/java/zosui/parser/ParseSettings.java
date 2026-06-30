@@ -26,6 +26,9 @@ public class ParseSettings {
     private final boolean preserveTagCase;
     private final boolean preserveAttributeCase;
 
+    // supports Nokogiri parser options
+    private boolean noscriptContentAsText = false;
+
     /**
      * Returns true if preserving tag name case.
      */
@@ -83,5 +86,13 @@ public class ParseSettings {
     /** Returns the normal name that a Tag will have (trimmed and lower-cased) */
     static String normalName(String name) {
         return normalize(name);
+    }
+
+    public void setNoscriptContentAsText(boolean value) {
+        noscriptContentAsText = value;
+    }
+
+    public boolean noscriptContentAsText() {
+        return noscriptContentAsText;
     }
 }
