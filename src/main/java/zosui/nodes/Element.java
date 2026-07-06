@@ -116,7 +116,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     }
     @Override public String getNamespaceURI() { return noNamespace ? null : tag.namespace(); }
     @Override public String getPrefix() { return noNamespace ? null : tag.prefix(); }
-    @Override public String getLocalName() { return noNamespace ? null : tag.localName(); }
+    @Override public String getLocalName() { return tag.localName(); }
     @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
     @Override public String getTextContent() throws DOMException { return text(); }
     @Override public String lookupPrefix(String namespaceURI) {
@@ -163,9 +163,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         return setAttributeNode(newAttr);
     }
     @Override public org.w3c.dom.NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        Validate.notEmpty(localName);
-        if ((namespaceURI == null || namespaceURI.equals("*")) && localName.equals("*")) { return getAllElementsExceptSelf(); }
-        else { return EMPTY_LIST; }
+        return getElementsByNamespaceAndTag(namespaceURI, localName);
     }
     @Override public boolean hasAttribute(String name) { return attribute(name) != null; }
     @Override public boolean hasAttributeNS(String namespaceURI, String localName) {
@@ -183,6 +181,8 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
+
+    public boolean isNoNamespace() { return noNamespace; }
 
     protected boolean areSameInDetail(org.w3c.dom.Node arg) {
         NamedNodeMap attrs = arg.getAttributes();
@@ -1380,6 +1380,14 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         tagName = Normalizer.normalize(tagName);
 
         return Collector.collect(new Evaluator.Tag(tagName), this);
+    }
+
+    public Elements getElementsByNamespaceAndTag(String namespace, String tagName) {
+        Validate.notEmpty(tagName);
+        tagName = Normalizer.normalize(tagName);
+        Elements elements = Collector.collect(new Evaluator.NamespaceAndTag(namespace, tagName), this);
+        if (!elements.isEmpty() && elements.getFirst() == this) { elements.deselect(0); }
+        return elements;
     }
 
     /**

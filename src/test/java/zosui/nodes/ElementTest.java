@@ -172,8 +172,8 @@ public class ElementTest {
 
     @Test
     public void testGetLocalName() {
-        assertNull(root.getLocalName());
-        assertNull(body.getLocalName());
+        assertEquals("html", root.getLocalName());
+        assertEquals("body", body.getLocalName());
     }
 
     @Test
@@ -322,11 +322,11 @@ public class ElementTest {
     @Test
     public void testGetElementsByTagNameNS() {
         org.w3c.dom.NodeList list = root.getElementsByTagNameNS(null, "div");
-        assertEquals(0, list.getLength());
+        assertEquals(1, list.getLength());
         list = root.getElementsByTagNameNS(null, "*");
         assertEquals(4, list.getLength());
         list = root.getElementsByTagNameNS("*", "div");
-        assertEquals(0, list.getLength());
+        assertEquals(1, list.getLength());
         list = root.getElementsByTagNameNS("*", "*");
         assertEquals(4, list.getLength());
         assertEquals("head", list.item(0).getNodeName());

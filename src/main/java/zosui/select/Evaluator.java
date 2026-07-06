@@ -89,6 +89,42 @@ public abstract class Evaluator {
     }
 
     /**
+     * Evaluator for namespace and tag name
+     */
+    public static final class NamespaceAndTag extends Evaluator {
+        private final String namespace;
+        private final String tagName;
+
+        public NamespaceAndTag(String namespace, String tagName) {
+            this.namespace = namespace;
+            this.tagName = tagName;
+        }
+
+        @Override
+        public boolean matches(Element root, Element element) {
+            if (namespace == null) {
+                if (tagName.equals("*")) { return element.isNoNamespace(); }
+                else { return element.isNoNamespace() && element.nameIs(tagName); }
+            } else if (namespace.equals("*")) {
+                if (tagName.equals("*")) { return true; }
+                else { return element.nameIs(tagName); }
+            } else {
+                if (tagName.equals("*")) { return !element.isNoNamespace() && element.tag().namespace().equals(namespace); }
+                else { return !element.isNoNamespace() && element.elementIs(namespace, tagName); }
+            }
+        }
+
+        @Override protected int cost() {
+            return 1;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s", tagName);
+        }
+    }
+
+    /**
      * Evaluator for element id
      */
     public static final class Id extends Evaluator {
