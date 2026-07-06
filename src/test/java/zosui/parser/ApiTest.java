@@ -1,6 +1,9 @@
 package zosui.parser;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,6 +18,8 @@ import zosui.nodes.DocumentFragment;
 import zosui.nodes.Node;
 import zosui.nodes.TextNode;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -189,4 +194,61 @@ public class ApiTest {
     The parser keeps only one newline. The behavior should be changed to preserve all.
     At the same time, toString(), outerHtml() or such methods may reduce extra newline down to one by an option.
      */
+
+    @Test
+    public void testDocumentIO() {
+        Reader html = new StringReader("<!DOCTYPE html><span>test</span>");
+        Parser parser = Parser.htmlParser();
+        Document document = parser.parseInput(html, "");
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("/html/body/span");
+            NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
+            assertEquals("span", element.nodeName());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testFragmentWithAnnotationXmlContext() {
+        String html = "<!DOCTYPE html><math><annotation-xml encoding='MathML-Presentation' /></math>";
+        //String html = "<!DOCTYPE html><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><annotation-xml encoding='MathML-Presentation' /></math>";
+        Document docWithNS = Parser.parse(html, "");
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            xPath.setNamespaceContext(new NamespaceContext() {
+                @Override public Iterator getPrefixes(String prefix) { return null; }
+                @Override public String getPrefix(String namespaceURI) { return null; }
+                @Override public String getNamespaceURI(String prefix) {
+                    if ("math".equals(prefix)) { return "http://www.w3.org/1998/Math/MathML"; }
+                    return XMLConstants.NULL_NS_URI;
+                }
+            });
+            XPathExpression expression = xPath.compile("//math:annotation-xml");
+            NodeList nodeList = (NodeList) expression.evaluate(docWithNS, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
+            assertNotNull(element);
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testFragmentWithAnnotationHtmlContext() {
+        Document document = Parser.parse("<!DOCTYPE html><math><annotation-xml encoding='text/html' /></math>", "");
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("//math:annotation-xml");
+            NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
+            assertNotNull(element);
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
