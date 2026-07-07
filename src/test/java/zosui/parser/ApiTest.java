@@ -213,10 +213,19 @@ public class ApiTest {
     }
 
     @Test
+    public void testFragmentWithMathHtml() {
+        Document document = Parser.parse("<!DOCTYPE html><math><annotation-xml encoding='text/html' /></math>", "");
+        Element math = (Element) document.getElementsByTagName("math").item(0);
+        assertEquals("math", math.getNodeName());
+        assertEquals("math", math.getLocalName());
+        assertEquals(Parser.NamespaceMathml, math.getNamespaceURI());
+        Element annotation = (Element) document.getElementsByTagName("annotation-xml").item(0);
+        assertEquals(Parser.NamespaceMathml, annotation.getNamespaceURI());
+    }
+
+    @Test
     public void testFragmentWithAnnotationXmlContext() {
-        String html = "<!DOCTYPE html><math><annotation-xml encoding='MathML-Presentation' /></math>";
-        //String html = "<!DOCTYPE html><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><annotation-xml encoding='MathML-Presentation' /></math>";
-        Document docWithNS = Parser.parse(html, "");
+        Document document = Parser.parse("<!DOCTYPE html><math><annotation-xml encoding='MathML-Presentation' /></math>", "");
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             xPath.setNamespaceContext(new NamespaceContext() {
@@ -228,25 +237,15 @@ public class ApiTest {
                 }
             });
             XPathExpression expression = xPath.compile("//math:annotation-xml");
-            NodeList nodeList = (NodeList) expression.evaluate(docWithNS, XPathConstants.NODESET);
-            assertEquals(1, nodeList.getLength());
-            zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
-            assertNotNull(element);
-        } catch (XPathExpressionException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    public void testFragmentWithAnnotationHtmlContext() {
-        Document document = Parser.parse("<!DOCTYPE html><math><annotation-xml encoding='text/html' /></math>", "");
-        try {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            XPathExpression expression = xPath.compile("//math:annotation-xml");
             NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
             assertEquals(1, nodeList.getLength());
-            zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
-            assertNotNull(element);
+            assertEquals("annotation-xml", nodeList.item(0).getNodeName());
+            zosui.nodes.Element annotation = (zosui.nodes.Element) nodeList.item(0);
+            annotation.append("<mi>x</mi>");
+            Element mi = (Element) annotation.getElementsByTagName("mi").item(0);
+            assertEquals("mi", mi.getLocalName());
+            assertEquals(Parser.NamespaceMathml, mi.getNamespaceURI());
+            assertEquals(null, mi.getPrefix());
         } catch (XPathExpressionException e) {
             throw new RuntimeException(e);
         }

@@ -114,7 +114,10 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         if (deep) { return this.clone(); }
         else { return this.shallowClone(); }
     }
-    @Override public String getNamespaceURI() { return noNamespace ? null : tag.namespace(); }
+    @Override public String getNamespaceURI() {
+        if (noNamespace && tag.namespace().equals(NamespaceHtml)) { return null; }
+        else { return tag.namespace(); }
+    }
     @Override public String getPrefix() { return noNamespace ? null : tag.prefix(); }
     @Override public String getLocalName() { return tag.localName(); }
     @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
@@ -1092,6 +1095,11 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     public Element append(String html) {
         Validate.notNull(html);
         List<Node> nodes = NodeUtils.parser(this).parseFragmentInput(html, this, baseUri());
+        for (Node node : nodes) {
+            if (node instanceof Element && ((Element) node).noNamespace) {
+                ((Element) node).tag().namespace(tag.namespace());
+            }
+        }
         addChildren(nodes.toArray(new Node[0]));
         return this;
     }
