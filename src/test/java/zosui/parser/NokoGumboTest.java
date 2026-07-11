@@ -5,14 +5,19 @@ import org.w3c.dom.*;
 import zosui.helper.TextUtil;
 import zosui.select.Elements;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.*;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NokoGumboTest {
     String buffer() {
@@ -139,6 +144,117 @@ public class NokoGumboTest {
         assertTrue(html.matches("(?i)<!DOCTYPE html>.*"));
     }
     /*
-    The parser converts to lower case doctype.
+    The parser converts the doctype to lower case.
      */
+
+    @Test
+    public void testFragmentHeader() {
+        Pattern pattern = Pattern.compile("<head>(.*?)</head>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(buffer());
+        assertTrue(matcher.find());
+        String found = matcher.group(1);
+        zosui.nodes.DocumentFragment fragment = new zosui.nodes.DocumentFragment(found, null, "", new HashMap<>());
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("title");
+            Node title = (Node) expression.evaluate(fragment, XPathConstants.NODE);
+            assertEquals("hello world", title.getTextContent());
+            expression = xPath.compile("meta");
+            Node meta = (Node) expression.evaluate(fragment, XPathConstants.NODE);
+            assertEquals("utf-8", meta.getAttributes().getNamedItem("charset").getNodeValue());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testFragmentBody() {
+        Pattern pattern = Pattern.compile("<body>(.*?)</body>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(buffer());
+        assertTrue(matcher.find());
+        String found = matcher.group(1);
+        zosui.nodes.DocumentFragment fragment = new zosui.nodes.DocumentFragment(found, null, "", new HashMap<>());
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("main/span");
+            Node span = (Node) expression.evaluate(fragment, XPathConstants.NODE);
+            assertEquals("<span>content</span>", span.toString());
+            expression = xPath.compile("comment()");
+            Node comment = (Node) expression.evaluate(fragment, XPathConstants.NODE);
+            assertEquals(" test comment ", comment.getTextContent());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testXlinkAttribute() {
+        String source = """
+                <!DOCTYPE html>
+                      <svg xmlns="http://www.w3.org/2000/svg">
+                        <a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s1"/>
+                      </svg>
+                """;
+        Document document = Parser.parse(TextUtil.stripNewlines(source), "");
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            xPath.setNamespaceContext(new NamespaceContext() {
+                @Override public Iterator getPrefixes(String prefix) { return null; }
+                @Override public String getPrefix(String namespaceURI) { return null; }
+                @Override public String getNamespaceURI(String prefix) {
+                    if ("svg".equals(prefix)) { return "http://www.w3.org/2000/svg"; }
+                    if ("xlink".equals(prefix)) { return "http://www.w3.org/1999/xlink"; }
+                    return XMLConstants.NULL_NS_URI;
+                }
+            });
+            XPathExpression expression = xPath.compile("//html/body/svg:svg/svg:a");
+            NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            Element element = (Element) nodeList.item(0);
+            assertNotNull(element);
+            NamedNodeMap attributes = element.getAttributes();
+            assertEquals(2, attributes.getLength());
+            Attr attr = (Attr) attributes.getNamedItem("xlink:href");
+            assertEquals("#s1", attr.getValue());
+            attr = (Attr) attributes.getNamedItem("xmlns:xlink");
+            assertEquals("http://www.w3.org/1999/xlink", attr.getValue());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testXlinkAttributeFragment() {
+        String source = """
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s1"/>
+        </svg>
+        """;
+        DocumentFragment fragment = new zosui.nodes.DocumentFragment(TextUtil.stripNewlines(source), null, "", new HashMap<>());
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            xPath.setNamespaceContext(new NamespaceContext() {
+                @Override public Iterator getPrefixes(String prefix) { return null; }
+                @Override public String getPrefix(String namespaceURI) { return null; }
+                @Override public String getNamespaceURI(String prefix) {
+                    if ("svg".equals(prefix)) { return "http://www.w3.org/2000/svg"; }
+                    if ("xlink".equals(prefix)) { return "http://www.w3.org/1999/xlink"; }
+                    return XMLConstants.NULL_NS_URI;
+                }
+            });
+            XPathExpression expression = xPath.compile("svg:svg/svg:a");
+            NodeList nodeList = (NodeList) expression.evaluate(fragment, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            Element element = (Element) nodeList.item(0);
+            assertNotNull(element);
+            NamedNodeMap attributes = element.getAttributes();
+            assertEquals(2, attributes.getLength());
+            Attr attr = (Attr) attributes.getNamedItem("xlink:href");
+            assertEquals("#s1", attr.getValue());
+            attr = (Attr) attributes.getNamedItem("xmlns:xlink");
+            assertEquals("http://www.w3.org/1999/xlink", attr.getValue());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
