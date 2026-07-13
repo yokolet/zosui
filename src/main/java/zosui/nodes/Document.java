@@ -18,6 +18,7 @@ import org.w3c.dom.Text;
 
 import zosui.helper.DataUtil;
 import zosui.helper.Validate;
+import zosui.parser.ParseErrorList;
 import zosui.parser.ParseSettings;
 import zosui.parser.Parser;
 import zosui.parser.Tag;
@@ -171,8 +172,8 @@ public class Document extends Element implements org.w3c.dom.Document {
         return getElementsByTagName(localName);
     }
     // public Element getElementById(String elementId) {}  // exactly the same method is defined in Element
-    @Override public String getInputEncoding() { return null; }
-    @Override public String getXmlEncoding() { return null; }
+    @Override public String getInputEncoding() { return charset().name(); }
+    @Override public String getXmlEncoding() { return charset().name(); }
     @Override public boolean getXmlStandalone() { return false; }
     @Override public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
@@ -202,6 +203,10 @@ public class Document extends Element implements org.w3c.dom.Document {
             if (!nodes.item(i).isEqualNode(otherNodes.item(i))) { return false; }
         }
         return true;
+    }
+
+    public ParseErrorList getParseErrors() {
+        return parser.getErrors();
     }
 
     /**

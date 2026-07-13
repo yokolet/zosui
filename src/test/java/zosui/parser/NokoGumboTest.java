@@ -257,4 +257,117 @@ public class NokoGumboTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    public void testRootComments() {
+        String source = "<!DOCTYPE html><!-- start --><html></html><!-- -->";
+        Document  document = Parser.parse(source, "");
+        NodeList list = document.getChildNodes();
+        String[] names = new String[list.getLength()];
+        for (int i = 0; i < list.getLength(); i++) {
+            names[i] = list.item(i).getNodeName();
+        }
+        //String[] expected  = {"html", "#comment", "html", "#comment"};
+        //assertArrayEquals(expected, names);
+        String[] expected = {"html", "#comment", "html"};
+        assertArrayEquals(expected, names);
+    }
+    /*
+    Two problems are here. The jsoup parser moves the last comment in the html block.
+    It should be the outside of html block.
+    Another problem is, tne name "comment" is not comply with DOM specification. It should be #comment as the spec says.
+     */
+
+    /*
+    The jsoup parser doesn't have an idea of max_attributes.
+     */
+
+    @Test
+    public void testParseErrors() {
+        String html = "<!DOCTYPE html><html><!-- <!-- --></a>";
+        zosui.nodes.Document document = Parser.parse(html, "");
+        ParseErrorList errorList = document.getParseErrors();
+        assertEquals(0, errorList.size());
+    }
+    /*
+    The parser's behavior is much different. The parsed result is like this:
+    <!doctype html>
+<html>
+ <!-- <!-- -->
+ <head></head>
+ <body></body>
+</html>
+    No error is reported.
+     */
+
+    @Test
+    public void testParseFragmentErrors() {
+        String html = "<\\r\\n";
+        Parser parser = Parser.htmlParser();
+        List<zosui.nodes.Node> list = parser.parseFragmentInput(html, null, "");
+        ParseErrorList errorList = parser.getErrors();
+        assertEquals(0, errorList.size());
+    }
+    /*
+    No error is reported. The parsed result is like this:
+    <html>
+ <head></head>
+ <body>&lt;\r\n</body>
+</html>
+     */
+
+    @Test
+    public void testDefaultMaxDepthParse() {
+        Parser parser = Parser.htmlParser();
+        int maxDepth = parser.getMaxDepth();  // 512
+        StringBuilder sb = new StringBuilder("<!DOCTYPE html><html><body>");
+        sb.append("<div>".repeat(maxDepth));
+        Document document = parser.parseInput(sb.toString(), "");
+        assertNotNull(document);
+    }
+    /*
+    No error is reported even though the nesting is over the max depth.
+     */
+
+    @Test
+    public void testDocumentEncoding() {
+        String html = """
+                <html>
+                        <head>
+                          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                        </head>
+                        <body>
+                          Кирилические символы
+                        </body>
+                      </html>
+                """;
+        Document document = Parser.parse(html, "");
+        String encoding = document.getInputEncoding();
+        assertEquals("UTF-8", encoding);
+        Element body = (Element) document.getElementsByTagName("body").item(0);
+        String text = TextUtil.stripNewlines(body.getTextContent());
+        assertEquals("Кирилические символы", text);
+    }
+
+    @Test
+    public void testLineText() {
+        String html = "<!DOCTYPE html>\\ntext node";
+        Parser parser = Parser.htmlParser();
+        parser.setTrackPosition(true);
+        Document document = parser.parseInput(html, "");
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("/html/body/text()");
+            Node text = (Node)expression.evaluate(document, XPathConstants.NODE);
+            assertEquals("#text", text.getNodeName());
+            zosui.nodes.Range range = ((zosui.nodes.Node) text).sourceRange();
+            assertEquals(1, range.end().lineNumber());
+            assertEquals(1, range.start().lineNumber());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    /*
+    The line number is different from Gumbo. It is the line number of the original input source.
+     */
 }

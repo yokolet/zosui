@@ -78,6 +78,14 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
     }
     @Override public org.w3c.dom.Node item(int index) {
         if (index < 0 || index >= size) { return null; }
+        Object o = vals[index];
+        if (o == null) { return new Attribute(keys[index], EmptyString, this); }
+        if (o instanceof String) { return new Attribute(keys[index], (String) o, this); }
+        if (o instanceof Map) {
+            Attribute a = new Attribute(keys[index], EmptyString, this);
+            a.setUserData(keys[index], o, null);
+            return a;
+        }
         return new Attribute(keys[index], checkNotNull(vals[index]), this);
     }
     @Override public int getLength() { return size; }
