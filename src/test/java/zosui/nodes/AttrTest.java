@@ -17,7 +17,10 @@ public class AttrTest {
 
     @BeforeAll
     public static void setUp() {
-        document = Parser.parse(html, "");
+        Parser parser = Parser.htmlParser();
+        parser.setTrackPosition(true);
+        parser.setTrackErrors(100);
+        document = parser.parseInput(html, "");
         System.out.println("document parsed successfully");
         body = (Element) document.getElementsByTagName("body").item(0);
         bodyAttrs = body.getAttributes();

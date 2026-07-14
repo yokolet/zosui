@@ -74,7 +74,12 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
     @Override public org.w3c.dom.Node removeNamedItem(String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+        if (!hasKey(name)) { return null; }
+        int idx = indexOfKey(name);
+        Object value = vals[idx];
+        remove(name);
+        if (value instanceof String) { return new Attribute(name, (String) value); }
+        else { return null; }
     }
     @Override public org.w3c.dom.Node item(int index) {
         if (index < 0 || index >= size) { return null; }
@@ -95,6 +100,20 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
     }
     @Override public org.w3c.dom.Node removeNamedItemNS(String namespaceURI, String localName) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+    }
+    public NamedNodeMap getDOMAttributes() {
+        List<String> jsoupKeys = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            if (keys[i] != null && keys[i].toLowerCase().startsWith("/jsoup")) {
+                jsoupKeys.add(keys[i]);
+            }
+        }
+        if (jsoupKeys.isEmpty()) { return this; }
+        Attributes attrs = this.clone();
+        for (String key : jsoupKeys) {
+            attrs.removeNamedItem(key);
+        }
+        return attrs;
     }
 
     // check there's room for more

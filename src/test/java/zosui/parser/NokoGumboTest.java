@@ -370,4 +370,25 @@ public class NokoGumboTest {
     /*
     The line number is different from Gumbo. It is the line number of the original input source.
      */
+
+    @Test
+    public void testIllFormedProcessing() {
+        String html = "<html><body><!--><?a/";
+        Parser parser = Parser.htmlParser();
+        parser.setTrackPosition(true);
+        Document document = parser.parseInput(html, "");
+        Element body = (Element) document.getElementsByTagName("body").item(0);
+        NodeList nodeList = body.getChildNodes();
+        assertEquals(2, nodeList.getLength());
+        String[] names = new String[nodeList.getLength()];
+        Class[] classes = new Class[nodeList.getLength()];
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            names[i] = nodeList.item(i).getNodeName();
+            classes[i] = nodeList.item(i).getClass();
+        }
+        String[] expected = {"#comment", "#comment"};
+        assertArrayEquals(expected, names);
+        Class[] expected2 = {zosui.nodes.Comment.class, zosui.nodes.Comment.class};
+        assertArrayEquals(expected2, classes);
+    }
 }

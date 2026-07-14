@@ -108,7 +108,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public short getNodeType() { return Node.ELEMENT_NODE; }
     @Override public Node getFirstChild() { return hasChildNodes() ? childNodes.getFirst() : null; }
     @Override public Node getLastChild() { return hasChildNodes() ? childNodes.getLast() : null; }
-    @Override public NamedNodeMap getAttributes() { return attributes == null ? Node.EMPTY_MAP : attributes; }
+    @Override public NamedNodeMap getAttributes() { return attributes == null ? Node.EMPTY_MAP : attributes.getDOMAttributes(); }
     @Override public org.w3c.dom.Document getOwnerDocument() { return ownerDocument(); }
     @Override public Node cloneNode(boolean deep) {
         if (deep) { return this.clone(); }
