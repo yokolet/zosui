@@ -172,7 +172,7 @@ public class Document extends Element implements org.w3c.dom.Document {
         return getElementsByTagName(localName);
     }
     // public Element getElementById(String elementId) {}  // exactly the same method is defined in Element
-    @Override public String getInputEncoding() { return charset().name(); }
+    @Override public String getInputEncoding() { return findInputEncoding(); }
     @Override public String getXmlEncoding() { return charset().name(); }
     @Override public boolean getXmlStandalone() { return false; }
     @Override public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
@@ -207,6 +207,40 @@ public class Document extends Element implements org.w3c.dom.Document {
 
     public ParseErrorList getParseErrors() {
         return parser.getErrors();
+    }
+
+    private String findInputEncoding() {
+        org.w3c.dom.NodeList list = getElementsByTagName("head");
+        for (int i = 0; i < list.getLength(); i++) {
+            Element head = (Element) list.item(i);
+            org.w3c.dom.NodeList headChildren = head.getElementsByTagName("meta");
+            return findCharsetInMetaTag(headChildren);
+        }
+        return null;
+    }
+
+    private String findCharsetInMetaTag(org.w3c.dom.NodeList headChildren) {
+        for (int i = 0; i < headChildren.getLength(); i++) {
+            Element headChild = (Element) headChildren.item(i);
+            if (headChild.getNodeName().equalsIgnoreCase("meta")) {
+                NamedNodeMap attributes = headChild.getAttributes();
+                if (attributes.getNamedItem("charset") != null) {
+                    return attributes.getNamedItem("charset").getNodeValue();
+                }
+                if (attributes.getNamedItem("http-equiv") != null && attributes.getNamedItem("content") != null) {
+                    String content = attributes.getNamedItem("content").getNodeValue();
+                    content = content.replace(" ", "");
+                    int start = content.indexOf("charset=");
+                    int end = -1;
+                    if (start != -1) {
+                        end = content.indexOf(";", start + "charset=".length());
+                        if (end == -1) { end = content.length(); }
+                        return content.substring(start + "charset=".length(), end);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
