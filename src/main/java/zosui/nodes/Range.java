@@ -1,5 +1,6 @@
 package zosui.nodes;
 
+import zosui.internal.SharedConstants;
 import zosui.internal.StringUtil;
 
 import java.util.Objects;
@@ -94,7 +95,7 @@ public class Range {
      */
     static Range of(Node node, boolean start) {
         final String key = start ? RangeKey : EndRangeKey;
-        if (!node.hasAttributes()) return Untracked;
+        if (!node.attributes().hasKey(UserDataKey)) return Untracked;
         Object range = node.attributes().userData(key);
         return range != null ? (Range) range : Untracked;
     }

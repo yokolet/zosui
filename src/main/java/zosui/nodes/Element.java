@@ -3,6 +3,7 @@ package zosui.nodes;
 import zosui.helper.Validate;
 import zosui.internal.Normalizer;
 import zosui.internal.QuietAppendable;
+import zosui.internal.SharedConstants;
 import zosui.internal.StringUtil;
 import zosui.parser.ParseSettings;
 import zosui.parser.Parser;
@@ -168,11 +169,12 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public org.w3c.dom.NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         return getElementsByNamespaceAndTag(namespaceURI, localName);
     }
-    @Override public boolean hasAttribute(String name) { return attribute(name) != null; }
+    @Override public boolean hasAttribute(String name) { return getAttributes().getNamedItem(name) != null; }
     @Override public boolean hasAttributeNS(String namespaceURI, String localName) {
         if (noNamespace && namespaceURI != null) { return false; }
-        if (namespaceURI == null || tag.namespace().equals(namespaceURI)) { return attribute(localName) != null; }
-        else { return false; }
+        if (localName == null)  { return false; }
+        if (namespaceURI == null || tag.namespace().equals(namespaceURI)) { return getAttributes().getNamedItem(localName) != null; }
+        return false;
     }
     @Override public TypeInfo getSchemaTypeInfo() { return null; }
     @Override public void setIdAttribute(String name, boolean isId) throws DOMException {
@@ -216,7 +218,10 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
 
     @Override
     public boolean hasAttributes() {
-        return attributes != null;
+        if (attributes == null || attributes.getLength() == 0) { return false; }
+        if (attributes.getLength() > 1 ) { return true; }
+        int index = attributes.indexOfKey(SharedConstants.UserDataKey);
+        return index == -1;
     }
 
     @Override

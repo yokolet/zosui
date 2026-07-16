@@ -69,7 +69,7 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
     // todo - make keys iterable without creating Attribute objects
 
     // org.w3c.dom.NamedNodeMap methods
-    @Override public org.w3c.dom.Node getNamedItem(String name) { return attribute(name); }
+    @Override public org.w3c.dom.Node getNamedItem(String name) { return name == null ? null : attribute(name); }
     @Override public org.w3c.dom.Node setNamedItem(org.w3c.dom.Node arg) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
@@ -102,17 +102,10 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
     public NamedNodeMap getDOMAttributes() {
-        List<String> jsoupKeys = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            if (keys[i] != null && keys[i].toLowerCase().startsWith("/jsoup")) {
-                jsoupKeys.add(keys[i]);
-            }
-        }
-        if (jsoupKeys.isEmpty()) { return this; }
+        int index = indexOfKey(SharedConstants.UserDataKey);
+        if (index == NotFound) { return this; }
         Attributes attrs = this.clone();
-        for (String key : jsoupKeys) {
-            attrs.removeNamedItem(key);
-        }
+        attrs.removeNamedItem(SharedConstants.UserDataKey);
         return attrs;
     }
 
