@@ -19,7 +19,10 @@ public class TextTest {
 
     @BeforeAll
     public static void setUp() {
-        document = Parser.parse(html, "");
+        Parser parser = Parser.htmlParser();
+        parser.setTrackPosition(true);
+        parser.setTrackErrors(100);
+        document = parser.parseInput(html, "");
         System.out.println("document parsed successfully");
         div = (Element) document.getElementsByTagName("div").item(0);
         divText1 = (org.w3c.dom.Text) div.getChildNodes().item(0);

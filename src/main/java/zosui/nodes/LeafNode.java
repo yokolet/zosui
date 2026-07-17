@@ -10,6 +10,7 @@ import org.w3c.dom.NodeList;
 
 import zosui.helper.Validate;
 import zosui.internal.QuietAppendable;
+import zosui.internal.SharedConstants;
 
 /**
  A node that does not hold any children. E.g.: {@link TextNode}, {@link DataNode}, {@link Comment}.
@@ -59,7 +60,7 @@ public abstract class LeafNode extends Node implements CharacterData {
     }
 
     @Override
-    public final boolean hasAttributes() {
+    public boolean hasAttributes() {
         return value instanceof Attributes;
     }
 
@@ -70,7 +71,7 @@ public abstract class LeafNode extends Node implements CharacterData {
     }
 
     private void ensureAttributes() {
-        if (!hasAttributes()) { // then value is String coreValue
+        if (value instanceof String) { // then value is String coreValue
             String coreValue = (String) value;
             Attributes attributes = new Attributes();
             value = attributes;
@@ -98,10 +99,14 @@ public abstract class LeafNode extends Node implements CharacterData {
 
     @Override
     public String attr(String key) {
-        if (!hasAttributes()) {
+        if (value instanceof String) {
             return nodeName().equals(key) ? (String) value : EmptyString;
         }
-        return super.attr(key);
+        if (value instanceof Attributes) {
+            String attrValue = ((Attributes) value).getIgnoreCase(key);
+            return (attrValue != null) ? attrValue : EmptyString;
+        }
+        return null;
     }
 
     @Override
