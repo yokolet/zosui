@@ -16,7 +16,10 @@ public class DocumentTest {
 
     @BeforeAll
     public static void setUp() {
-        document = Parser.parse(html, "");
+        Parser parser = Parser.htmlParser();
+        parser.setTrackPosition(true);
+        parser.setTrackErrors(100);
+        document = parser.parseInput(html, "");
     }
 
     @Test
