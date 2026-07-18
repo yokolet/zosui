@@ -36,8 +36,11 @@ enum HtmlTreeBuilderState {
                 tb.getDocument().appendChild(doctype);
                 tb.onNodeInserted(doctype);
                 // todo: quirk state check on more doctype ids, if deemed useful (most are ancient legacy and presumably irrelevant)
-                if (d.isForceQuirks() || !doctype.name().equals("html") || doctype.publicId().equalsIgnoreCase("HTML"))
+                if (d.isForceQuirks() || !doctype.name().equals("html") || doctype.publicId().equalsIgnoreCase("HTML")) {
                     tb.getDocument().quirksMode(Document.QuirksMode.quirks);
+                } else {
+                    tb.getDocument().quirksMode(Document.QuirksMode.noQuirks);
+                }
                 tb.transition(BeforeHtml);
             } else {
                 // todo: check not iframe srcdoc
