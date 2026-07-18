@@ -38,6 +38,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
 
     // org.w3c.dom
     private HashMap<String, Object> userdata;
+    protected Document ownerDocument = null;
 
     /**
      * Default constructor. Doesn't set up base uri, children, or attributes; use with caution.
@@ -520,9 +521,13 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
      * @return the Document associated with this Node, or null if there is no such Document.
      */
     public @Nullable Document ownerDocument() {
+        if (ownerDocument != null) { return ownerDocument; }
         Node node = this;
         while (node != null) {
-            if (node instanceof Document) return (Document) node;
+            if (node instanceof Document) {
+                ownerDocument = (Document) node;
+                return ownerDocument;
+            }
             node = node.parentNode;
         }
         return null;

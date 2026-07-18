@@ -256,4 +256,12 @@ public class DocumentTest {
         DOMConfiguration domConfig = document.getDomConfig();
         assertNotNull(domConfig);
     }
+
+    @Test
+    public void testCreateElement() {
+        org.w3c.dom.Element element = document.createElement("div");
+        assertEquals("div", element.getNodeName());
+        assertEquals(document, element.getOwnerDocument());
+        assertNull(element.getParentNode());
+    }
 }

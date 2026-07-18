@@ -378,10 +378,12 @@ public class Document extends Element implements org.w3c.dom.Document {
      @return new element
      */
     public Element createElement(String tagName) {
-        return new Element(
-            parser.tagSet().valueOf(tagName, parser.defaultNamespace(), ParseSettings.preserveCase),
-            searchUpForAttribute(this, BaseUriKey)
+        Element element = new Element(
+                parser.tagSet().valueOf(tagName, parser.defaultNamespace(), ParseSettings.preserveCase),
+                searchUpForAttribute(this, BaseUriKey)
         );
+        element.ownerDocument = this;
+        return element;
     }
 
     @Override
