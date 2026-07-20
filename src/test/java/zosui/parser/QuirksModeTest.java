@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import zosui.helper.TextUtil;
 import zosui.nodes.Document;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class QuirksModeTest {
     private static Parser parser;
@@ -64,4 +63,8 @@ public class QuirksModeTest {
         Document.QuirksMode mode = document.quirksMode();
         assertEquals(Document.QuirksMode.quirks, mode);
     }
+
+    /*
+    Needs to rework DocumentFragment looking at Ruby side implementation.
+     */
 }
