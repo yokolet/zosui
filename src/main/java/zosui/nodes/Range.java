@@ -1,6 +1,5 @@
 package zosui.nodes;
 
-import zosui.internal.SharedConstants;
 import zosui.internal.StringUtil;
 
 import java.util.Objects;
