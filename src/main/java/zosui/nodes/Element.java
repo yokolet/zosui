@@ -111,6 +111,17 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     @Override public Node getLastChild() { return hasChildNodes() ? childNodes.getLast() : null; }
     @Override public NamedNodeMap getAttributes() { return attributes == null ? Node.EMPTY_MAP : attributes.getDOMAttributes(); }
     @Override public org.w3c.dom.Document getOwnerDocument() { return ownerDocument(); }
+    @Override public Node appendChild(org.w3c.dom.Node newChild) throws DOMException {
+        if (newChild instanceof Element) {
+            appendChild((Element) newChild);
+            return (Element) newChild;
+        } else if (newChild instanceof org.w3c.dom.Element) {
+            Element element = wrapElement((org.w3c.dom.Element) newChild);
+            appendChild(element);
+            return element;
+        }
+        return this;
+    }
     @Override public Node cloneNode(boolean deep) {
         if (deep) { return this.clone(); }
         else { return this.shallowClone(); }
@@ -200,6 +211,16 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
             }
         }
         return true;
+    }
+
+    private Element wrapElement(org.w3c.dom.Element element) {
+        Tag tag = new Tag(element.getTagName(), element.getNamespaceURI());
+        NamedNodeMap attrs = element.getAttributes();
+        Attributes attributes = new Attributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            attributes.add(attrs.item(i).getNodeName(), attrs.item(i).getNodeValue());
+        }
+        return new Element(tag, element.getBaseURI(), attributes);
     }
 
     /**

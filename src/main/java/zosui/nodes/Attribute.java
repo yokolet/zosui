@@ -95,7 +95,7 @@ public class Attribute implements Cloneable, Attr  {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
     @Override public Node appendChild(org.w3c.dom.Node newChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Attribute node doesn't have a child node");
     }
     @Override public boolean hasChildNodes() { return false; }
     @Override public Node cloneNode(boolean deep) { return clone(); }
