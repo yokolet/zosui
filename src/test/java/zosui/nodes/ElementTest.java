@@ -4,7 +4,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import zosui.parser.Parser;
+
+import javax.xml.xpath.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,10 +16,11 @@ public class ElementTest {
 
     private static org.w3c.dom.Document document;
     private static org.w3c.dom.Element root, body;
+    private static Parser parser;
 
     @BeforeAll
     public static void setUp() {
-        Parser parser = Parser.htmlParser();
+        parser = Parser.htmlParser();
         parser.setTrackPosition(true);
         parser.setTrackErrors(100);
         document = parser.parseInput(html, "");
@@ -353,5 +357,23 @@ public class ElementTest {
         assertFalse(root.hasAttributeNS(null, "id"));
         assertTrue(body.hasAttributeNS(null, "id"));
         assertFalse(body.hasAttributeNS("http://www.w3.org/1999/xhtml", "id"));
+    }
+
+    @Test
+    public void testAppendChild() {
+        org.w3c.dom.Document docToBeModified = parser.parseInput(html, "");
+        org.w3c.dom.Element body = (Element) docToBeModified.getElementsByTagName("body").item(0);
+        org.w3c.dom.Element hr = docToBeModified.createElement("hr");
+        org.w3c.dom.Node addedNode = body.appendChild(hr);
+        assertTrue(hr.isSameNode(addedNode));
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("/html/body/hr");
+            NodeList nodeList = (NodeList) expression.evaluate(docToBeModified, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            assertEquals("hr", nodeList.item(0).getNodeName());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

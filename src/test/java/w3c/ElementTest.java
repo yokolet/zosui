@@ -463,4 +463,33 @@ public class ElementTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    public void testAppendChild() {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            InputSource inputSource = new InputSource(new StringReader(html));
+            org.w3c.dom.Document docToBeModified = builder.parse(inputSource);
+            assertNotNull(docToBeModified);
+            org.w3c.dom.Element body = (Element) docToBeModified.getElementsByTagName("body").item(0);
+            org.w3c.dom.Element hr = docToBeModified.createElement("hr");
+            org.w3c.dom.Node addedNode = body.appendChild(hr);
+            assertTrue(hr.isSameNode(addedNode));
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("/html/body/hr");
+            NodeList nodeList = (NodeList) expression.evaluate(docToBeModified, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            assertEquals("hr", nodeList.item(0).getNodeName());
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
