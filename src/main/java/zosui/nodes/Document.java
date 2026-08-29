@@ -136,7 +136,10 @@ public class Document extends Element implements org.w3c.dom.Document {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
     }
     @Override public Text createTextNode(String data) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        TextNode node = new TextNode(data);
+        node.ownerDocument = this;
+        node.setBaseUri(baseUri());
+        return node;
     }
     @Override public Comment createComment(String data) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");

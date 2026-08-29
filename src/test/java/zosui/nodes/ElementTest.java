@@ -5,9 +5,17 @@ import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import zosui.parser.Parser;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
+
+import java.io.IOException;
+import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -360,12 +368,12 @@ public class ElementTest {
     }
 
     @Test
-    public void testAppendChild() {
+    public void testAppendElementChild() {
         org.w3c.dom.Document docToBeModified = parser.parseInput(html, "");
         org.w3c.dom.Element body = (Element) docToBeModified.getElementsByTagName("body").item(0);
         org.w3c.dom.Element hr = docToBeModified.createElement("hr");
         org.w3c.dom.Node addedNode = body.appendChild(hr);
-        assertTrue(hr.isSameNode(addedNode));
+        assertTrue(addedNode.isSameNode(hr));
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("/html/body/hr");
@@ -373,6 +381,66 @@ public class ElementTest {
             assertEquals(1, nodeList.getLength());
             assertEquals("hr", nodeList.item(0).getNodeName());
         } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testAppendForeignElementChild() {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            InputSource inputSource = new InputSource(new StringReader(html));
+            org.w3c.dom.Document w3cDoc = builder.parse(inputSource);
+            org.w3c.dom.Element hr = w3cDoc.createElement("hr");
+
+            org.w3c.dom.Document docToBeModified = parser.parseInput(html, "");
+            org.w3c.dom.Element body = (Element) docToBeModified.getElementsByTagName("body").item(0);
+
+            org.w3c.dom.Node addedNode = body.appendChild(hr);
+            assertTrue(addedNode.isSameNode(hr));
+
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression expression = xPath.compile("/html/body/hr");
+            NodeList nodeList = (NodeList) expression.evaluate(docToBeModified, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            assertEquals("hr", nodeList.item(0).getNodeName());
+        } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testAppendTextChild() {
+        org.w3c.dom.Document docToBeModified = parser.parseInput(html, "");
+        org.w3c.dom.Element body = (Element) docToBeModified.getElementsByTagName("body").item(0);
+        org.w3c.dom.Text text = docToBeModified.createTextNode("second");
+        org.w3c.dom.Node added = body.appendChild(text);
+        assertTrue(added.isSameNode(text));
+        String content = body.getTextContent();
+        assertEquals("first second", content);
+    }
+
+    @Test
+    public void testAppendForeignTextNode() {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            InputSource inputSource = new InputSource(new StringReader(html));
+            org.w3c.dom.Document w3cDoc = builder.parse(inputSource);
+            org.w3c.dom.Text text = w3cDoc.createTextNode("second");
+
+            org.w3c.dom.Document docToBeModified = parser.parseInput(html, "");
+            org.w3c.dom.Element body = (Element) docToBeModified.getElementsByTagName("body").item(0);
+
+            org.w3c.dom.Node addedNode = body.appendChild(text);
+            assertTrue(addedNode.isSameNode(text));
+
+            String content = body.getTextContent();
+            assertEquals("first second", content);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             throw new RuntimeException(e);
         }
     }

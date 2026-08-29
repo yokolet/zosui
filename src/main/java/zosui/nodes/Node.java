@@ -39,6 +39,7 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     // org.w3c.dom
     private HashMap<String, Object> userdata;
     protected Document ownerDocument = null;
+    protected org.w3c.dom.Node foreignNode = null;
 
     /**
      * Default constructor. Doesn't set up base uri, children, or attributes; use with caution.
@@ -147,7 +148,8 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
     @Override public boolean isSameNode(org.w3c.dom.Node other) {
-        return this == other;
+        if (foreignNode == null || other instanceof Node) { return this == other; }
+        else { return foreignNode == other; }
     }
     public abstract String lookupPrefix(String namespaceURI);
     public abstract boolean isDefaultNamespace(String namespaceURI);

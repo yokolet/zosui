@@ -215,25 +215,31 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     }
 
     private Element wrapElement(org.w3c.dom.Element element) {
-        Tag tag = new Tag(element.getTagName(), element.getNamespaceURI());
+        Tag tag = new Tag(element.getTagName(), element.getNamespaceURI() == null ? "" : element.getNamespaceURI());
         NamedNodeMap attrs = element.getAttributes();
         Attributes attributes = new Attributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             attributes.add(attrs.item(i).getNodeName(), attrs.item(i).getNodeValue());
         }
-        return new Element(tag, element.getBaseURI(), attributes);
+        Element wrappedElement = new Element(tag, element.getBaseURI(), attributes);
+        wrappedElement.foreignNode = element;
+        return wrappedElement;
     }
 
     private LeafNode wrapCharacterData(org.w3c.dom.CharacterData characterData) {
         String data = characterData.getData();
+        LeafNode leafNode = null;
         if (characterData instanceof org.w3c.dom.CDATASection) {
-            return new CDataNode(data);
+            leafNode = new CDataNode(data);
         } else if (characterData instanceof org.w3c.dom.Comment) {
-            return new Comment(data);
+            leafNode = new Comment(data);
         } else if (characterData instanceof org.w3c.dom.Text) {
-            return new TextNode(data);
+            leafNode = new TextNode(data);
         }
-        return null;
+        if (leafNode != null) {
+            leafNode.foreignNode = characterData;
+        }
+        return leafNode;
     }
 
     /**
