@@ -1077,7 +1077,9 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
     @Override
     public boolean equals(@Nullable Object o) {
         // implemented just so that javadoc is clear this is an identity test
-        return this == o;
+        if (this == o) return true;
+        if (foreignNode == o) return true;
+        return false;
     }
 
     /**
