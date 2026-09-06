@@ -68,6 +68,22 @@ public class ApiTest {
     }
 
     @Test
+    public void testUrl2() {
+        String html = "<ruby><div><rp>Hello";
+        String url =  "http://example.com";
+
+        Parser parser = Parser.htmlParser();
+        parser.setTrackErrors(100);
+        Document document = parser.parseInput(html, url);
+        assertEquals(url, document.getBaseURI());
+        assertEquals(2, parser.getErrors().size());
+
+        parser.setTrackErrors(1);
+        parser.parseInput(html, url);
+        assertEquals(1, parser.getErrors().size());
+    }
+
+    @Test
     public void testParseEncoding() {
         String utf8 = "<!DOCTYPE html><body><p>おはようございます";
         Document document = Parser.parse(utf8, "");
