@@ -44,7 +44,12 @@ public class ApiTest {
         assertNotNull(str);
         assertEquals("<div><p>hi</p></div>", TextUtil.stripNewlines(str));
 
-        DocumentFragment fragment = new DocumentFragment(frag, null, "", new HashMap<>());
+        Document base = new Document("");
+        List<Node> nodes = Parser.parseFragment(frag, base, "");
+        DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (Node node : nodes) {
+            fragment.appendChild(node);
+        }
         String frag2 = fragment.html();
         assertNotNull(frag2);
         assertEquals("<div><p>hi</p></div>", TextUtil.stripNewlines(frag2));
@@ -145,14 +150,25 @@ public class ApiTest {
     @Test
     public void testParseNoscriptFragmentAsElements() {
         String html = "<meta charset='UTF-8'><link rel=stylesheet href=!>";
+
+        // TODO: this option handling should be implemented
         Map<String, Object> options = new HashMap<>();
-        options.put("parseNoscriptContextAsText", false); // TODO: this option handling should be implemented
+        options.put("parseNoscriptContextAsText", false);
         options.put("maxErrors", 100);
-        DocumentFragment frag = new DocumentFragment(html, "noscript", "", options);
-        List<ParseError> errors = frag.getErrors();
+
+        Parser parser = Parser.htmlParser();
+        parser.setTrackErrors(100);
+
+        Document base = new Document("");
+        List<Node> nodes = Parser.parseFragment(html, base, "");
+        DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (Node node : nodes) {
+            fragment.appendChild(node);
+        }
+        List<ParseError> errors = ((Document)fragment.getOwnerDocument()).getParseErrors();
         assertEquals(0, errors.size());
-        assertEquals(2, frag.getChildNodes().getLength());
-        String str = frag.html();
+        assertEquals(2, fragment.getChildNodes().getLength());
+        String str = fragment.html();
         assertEquals("<meta charset=\"UTF-8\"><link rel=\"stylesheet\" href=\"!\">", TextUtil.stripNewlines(str));
     }
 

@@ -12,11 +12,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DocumentTest {
     private static String html = "<html><head></head><body id=\"myBody\"><div class=\"baz\"><a href=\"foo\" class=\"bar\">first</a></div></body></html>";
 
+    private static Parser parser;
     private static org.w3c.dom.Document document;
 
     @BeforeAll
     public static void setUp() {
-        Parser parser = Parser.htmlParser();
+        parser = Parser.htmlParser();
         parser.setTrackPosition(true);
         parser.setTrackErrors(100);
         document = parser.parseInput(html, "");
@@ -263,5 +264,69 @@ public class DocumentTest {
         assertEquals("div", element.getNodeName());
         assertEquals(document, element.getOwnerDocument());
         assertNull(element.getParentNode());
+    }
+
+    @Test
+    public void testAdoptNode() {
+        Document base = parser.parseInput(html, "");
+        NodeList list = base.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        Node divNode = list.item(0);
+        Document another = new Document("");
+        assertNotEquals(another, divNode.getOwnerDocument());
+
+        another.adoptNode(divNode);
+        assertEquals(another, divNode.getOwnerDocument());
+        assertNull(divNode.getParentNode());
+        NamedNodeMap attributes = divNode.getAttributes();
+        assertEquals(1, attributes.getLength());
+        Attr attribute = (Attr)attributes.item(0);
+        assertEquals(another, attribute.getOwnerDocument());
+        assertTrue(attribute.getSpecified());
+        assertEquals(divNode, attribute.getOwnerElement());
+        NodeList childNodes = divNode.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node child = childNodes.item(i);
+            assertEquals(another, child.getOwnerDocument());
+        }
+        list = base.getElementsByTagName("div");
+        assertEquals(0, list.getLength());
+    }
+
+    @Test
+    public void testAdoptAttr() {
+        Document base = parser.parseInput(html, "");
+        NodeList list = base.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        Node divNode = list.item(0);
+        NamedNodeMap attributes = divNode.getAttributes();
+        assertEquals(1, attributes.getLength());
+        Attr attribute = (Attr)attributes.item(0);
+        Document another = new Document("");
+        assertNotEquals(another, attribute.getOwnerDocument());
+        assertNotNull(attribute.getOwnerElement());
+
+        another.adoptNode(attribute);
+        assertEquals(another, attribute.getOwnerDocument());
+        assertNull(attribute.getOwnerElement());
+        assertEquals(0, divNode.getAttributes().getLength());
+    }
+
+    @Test
+    public void testAdoptCharacterData() {
+        Document base = parser.parseInput(html, "");
+        NodeList list = base.getElementsByTagName("a");
+        assertEquals(1, list.getLength());
+        Node aNode = list.item(0);
+        Node textNode = aNode.getFirstChild();
+        assertEquals(base, textNode.getOwnerDocument());
+        assertEquals(aNode, textNode.getParentNode());
+        Document another = new Document("");
+        assertNotEquals(another, textNode.getOwnerDocument());
+
+        another.adoptNode(textNode);
+        assertEquals(another, textNode.getOwnerDocument());
+        assertNull(textNode.getParentNode());
+        assertEquals(0, aNode.getChildNodes().getLength());
     }
 }

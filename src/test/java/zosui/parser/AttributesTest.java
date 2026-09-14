@@ -4,11 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import zosui.nodes.Attribute;
+import zosui.nodes.Document;
 import zosui.nodes.DocumentFragment;
-import zosui.select.Elements;
+import zosui.nodes.Node;
 
 import javax.xml.xpath.*;
-import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,7 +17,12 @@ public class AttributesTest {
     @Test
     public void testSerializeAttribute() {
         String html = "<div id='foo' class=\"bar baz\"></div>";
-        DocumentFragment fragment = new DocumentFragment(html, null, "", new HashMap<>());
+        Document base = new Document("");
+        List<Node> nodes = Parser.parseFragment(html, base, "");
+        DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (Node node : nodes) {
+            fragment.appendChild(node);
+        }
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("//div");
@@ -42,7 +48,12 @@ public class AttributesTest {
             sb.append("a").append(i).append("=\"1\" ");
         }
         sb.append(" a9=\"2\" />");
-        DocumentFragment fragment = new DocumentFragment(sb.toString(), null, "", new HashMap<>());
+        Document base = new Document("");
+        List<Node> nodes = Parser.parseFragment(sb.toString(), base, "");
+        DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (Node node : nodes) {
+            fragment.appendChild(node);
+        }
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("//span");
