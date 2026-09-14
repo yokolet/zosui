@@ -11,7 +11,6 @@ import javax.xml.xpath.*;
 
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -153,7 +152,12 @@ public class NokoGumboTest {
         Matcher matcher = pattern.matcher(buffer());
         assertTrue(matcher.find());
         String found = matcher.group(1);
-        zosui.nodes.DocumentFragment fragment = new zosui.nodes.DocumentFragment(found, null, "", new HashMap<>());
+        zosui.nodes.Document base = new zosui.nodes.Document("");
+        List<zosui.nodes.Node> nodes = Parser.parseFragment(found, base, "");
+        zosui.nodes.DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (zosui.nodes.Node node : nodes) {
+            fragment.appendChild(node);
+        }
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("title");
@@ -173,7 +177,12 @@ public class NokoGumboTest {
         Matcher matcher = pattern.matcher(buffer());
         assertTrue(matcher.find());
         String found = matcher.group(1);
-        zosui.nodes.DocumentFragment fragment = new zosui.nodes.DocumentFragment(found, null, "", new HashMap<>());
+        zosui.nodes.Document base = new zosui.nodes.Document("");
+        List<zosui.nodes.Node> nodes = Parser.parseFragment(found, base, "");
+        zosui.nodes.DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (zosui.nodes.Node node : nodes) {
+            fragment.appendChild(node);
+        }
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("main/span");
@@ -230,7 +239,12 @@ public class NokoGumboTest {
           <a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s1"/>
         </svg>
         """;
-        DocumentFragment fragment = new zosui.nodes.DocumentFragment(TextUtil.stripNewlines(source), null, "", new HashMap<>());
+        zosui.nodes.Document base = new zosui.nodes.Document("");
+        List<zosui.nodes.Node> nodes = Parser.parseFragment(source, base, "");
+        zosui.nodes.DocumentFragment fragment = (zosui.nodes.DocumentFragment)base.createDocumentFragment();
+        for (zosui.nodes.Node node : nodes) {
+            fragment.appendChild(node);
+        }
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             xPath.setNamespaceContext(new NamespaceContext() {
