@@ -133,7 +133,10 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public Element getDocumentElement() { return (Element)firstChild(); }
     // Element createElement(String tagName) throws DOMException
     @Override public DocumentFragment createDocumentFragment() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        zosui.nodes.DocumentFragment fragment = new zosui.nodes.DocumentFragment();
+        fragment.ownerDocument = this;
+        fragment.setBaseUri(baseUri());
+        return fragment;
     }
     @Override public Text createTextNode(String data) {
         TextNode node = new TextNode(data);

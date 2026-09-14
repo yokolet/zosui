@@ -33,13 +33,13 @@ public class DocumentFragmentTest {
 
     @Test
     public void testCreateDocumentFragment() {
-        DocumentFragment docFragment = document.createDocumentFragment();
-        assertNotNull(docFragment);
-        assertEquals("#document-fragment", docFragment.getNodeName());
-        assertNull(docFragment.getNodeValue());
-        assertEquals(Node.DOCUMENT_FRAGMENT_NODE, docFragment.getNodeType());
-        assertEquals(document, docFragment.getOwnerDocument());
-        assertNull(docFragment.getParentNode());
+        DocumentFragment documentFragment = document.createDocumentFragment();
+        assertNotNull(documentFragment);
+        assertEquals("#document-fragment", documentFragment.getNodeName());
+        assertNull(documentFragment.getNodeValue());
+        assertEquals(Node.DOCUMENT_FRAGMENT_NODE, documentFragment.getNodeType());
+        assertEquals(document, documentFragment.getOwnerDocument());
+        assertNull(documentFragment.getParentNode());
     }
 
     @Test
@@ -53,9 +53,9 @@ public class DocumentFragmentTest {
             DocumentFragment documentFragment = document.createDocumentFragment();
             assertEquals(document, documentFragment.getOwnerDocument());
             assertNotEquals(document, tempRoot.getOwnerDocument());
-            Node imported = document.importNode(tempRoot, true);
-            assertEquals(document, imported.getOwnerDocument());
-            documentFragment.appendChild(imported);
+            Node adopted = document.adoptNode(tempRoot);
+            assertEquals(document, adopted.getOwnerDocument());
+            documentFragment.appendChild(adopted);
             assertEquals(1, documentFragment.getChildNodes().getLength());
             assertEquals("おはようございます", documentFragment.getFirstChild().getTextContent());
         } catch (SAXException e) {
