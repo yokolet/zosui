@@ -91,8 +91,11 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
     }
     @Override public Node removeChild(org.w3c.dom.Node oldChild) throws DOMException {
-        // should call removeChildInner(Node out)
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+        if (oldChild.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE) {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document node cannot be removed");
+        }
+        removeChildInner((Node)oldChild);
+        return (Node)oldChild;
     }
     public abstract Node appendChild(org.w3c.dom.Node newChild) throws DOMException;
     @Override public boolean hasChildNodes() { return childNodeSize() > 0; }
