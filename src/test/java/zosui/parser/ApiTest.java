@@ -105,6 +105,14 @@ public class ApiTest {
     }
 
     @Test
+    public void testSerializationEncoding() {
+        String html = "<!DOCUMENT html><span>ฉันไม่พูดภาษาไทย</span>";
+        Document document = Parser.parse(html, "");
+        Element element = document.getDocumentElement();
+        assertEquals("html", element.getNodeName());
+    }
+
+    @Test
     public void testParseNoscriptAsElementInHead() {
         String html = "<!DOCTYPE html><head><noscript><img src=!></noscript></head>";
         Parser parser = Parser.htmlParser();

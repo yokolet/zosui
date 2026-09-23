@@ -130,7 +130,15 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public boolean isDefaultNamespace(String namespaceURI) { return false; }
     @Override public DocumentType getDoctype() { return documentType(); }
     @Override public DOMImplementation getImplementation() { return implementation; }
-    @Override public Element getDocumentElement() { return (Element)firstChild(); }
+    @Override public Element getDocumentElement() {
+        for (int i = 0; i < childNodes.size(); i++) {
+            Node child = childNodes.get(i);
+            if (child instanceof Element) {
+                return (Element) child;
+            }
+        }
+        return null;
+    }
     // Element createElement(String tagName) throws DOMException
     @Override public DocumentFragment createDocumentFragment() {
         zosui.nodes.DocumentFragment fragment = new zosui.nodes.DocumentFragment();
