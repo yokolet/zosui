@@ -224,6 +224,7 @@ public class ApiTest {
                 NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
                 assertEquals(1, nodeList.getLength());
                 zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
+                ((zosui.nodes.Document)element.getOwnerDocument()).outputSettings().prettyPrint(true);
                 assertEquals(expected[i], element.outerHtml());
             } catch (XPathExpressionException e) {
                 throw new RuntimeException(e);
@@ -234,6 +235,39 @@ public class ApiTest {
     The parser keeps only one newline. The behavior should be changed to preserve all.
     At the same time, toString(), outerHtml() or such methods may reduce extra newline down to one by an option.
      */
+
+    @Test
+    public void testInnerHtmlPreserveNewlines() {
+        String[] tags = {"pre", "listing", "textarea"};
+//        String[] expected = {
+//                "\n\nContent",
+//                "\n\nContent",
+//                "\n\nContent",
+//        };
+        // the differences come from the parser
+        String[] expected = {
+                "Content",
+                "Content",
+                "Content",
+        };
+        for (int i = 0; i < tags.length; i++) {
+            String tag = tags[i];
+            String html = String.format("<!DOCTYPE html><%s>\n\nContent</%s>", tag, tag);
+            Document document = Parser.parse(html, "");
+            try {
+                XPath xPath = XPathFactory.newInstance().newXPath();
+                String exprStr = String.format("/html/body/%s", tag);
+                XPathExpression expression = xPath.compile(exprStr);
+                NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+                assertEquals(1, nodeList.getLength());
+                zosui.nodes.Element element = (zosui.nodes.Element)nodeList.item(0);
+                ((zosui.nodes.Document)element.getOwnerDocument()).outputSettings().prettyPrint(true);
+                assertEquals(expected[i], element.html());
+            } catch (XPathExpressionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     @Test
     public void testDocumentIO() {

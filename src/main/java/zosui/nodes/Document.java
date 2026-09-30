@@ -131,8 +131,7 @@ public class Document extends Element implements org.w3c.dom.Document {
     @Override public DocumentType getDoctype() { return documentType(); }
     @Override public DOMImplementation getImplementation() { return implementation; }
     @Override public Element getDocumentElement() {
-        for (int i = 0; i < childNodes.size(); i++) {
-            Node child = childNodes.get(i);
+        for (Node child : childNodes) {
             if (child instanceof Element) {
                 return (Element) child;
             }
