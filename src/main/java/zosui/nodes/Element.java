@@ -2086,7 +2086,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      @since 1.15.2
      */
     public Range endSourceRange() {
-        return Range.of(this, false);
+        return Range.ofEnd(this);
     }
 
     @Override
