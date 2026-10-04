@@ -1046,7 +1046,22 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
      @since 1.15.2
      */
     public Range sourceRange() {
-        return Range.of(this, true);
+        return Range.ofStart(this);
+    }
+
+    /**
+     Gets the range spans, if source tracking was used.
+     */
+    Range.@Nullable Spans spans() {
+        if (!hasAttributes()) return null;
+        return attributes().spans();
+    }
+
+    /**
+     Gets or creates range spans for this node.
+     */
+    Range.Spans ensureSpans() {
+        return attributes().ensureSpans();
     }
 
     /**

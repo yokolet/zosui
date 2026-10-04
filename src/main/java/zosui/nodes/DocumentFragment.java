@@ -42,9 +42,9 @@ public class DocumentFragment extends Element implements org.w3c.dom.DocumentFra
     }
     private ParseSettings createSettings(Map<String, Object> options) {
         ParseSettings settings = ParseSettings.htmlDefault;
-        if (options.containsKey("parse_noscript_content_as_text")) {
-            settings.setNoscriptContentAsText((boolean)options.get("parse_noscript_content_as_text"));
-        }
+//        if (options.containsKey("parse_noscript_content_as_text")) {
+//            settings.setNoscriptContentAsText((boolean)options.get("parse_noscript_content_as_text"));
+//        }
         return settings;
     }
 

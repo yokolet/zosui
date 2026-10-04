@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import static zosui.internal.Normalizer.equalsIgnoreAsciiCase;
 import static zosui.internal.Normalizer.lowerCase;
 import static zosui.internal.SharedConstants.AttrRangeKey;
 import static zosui.nodes.Range.AttributeRange.UntrackedAttr;
@@ -132,10 +133,39 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
         return NotFound;
     }
 
+    /**
+     Finds a visible attribute's range index, skipping internal metadata slots.
+     */
+    int visibleIndexOfKey(String key) {
+        Validate.notNull(key);
+        int visible = 0;
+        for (int i = 0; i < size; i++) {
+            String attrKey = keys[i];
+            if (isInternalKey(attrKey))
+                continue;
+            if (key.equals(attrKey))
+                return visible;
+            visible++;
+        }
+        return NotFound;
+    }
+
+    /**
+     Maps an attribute array slot to the matching visible attribute index.
+     */
+    private int visibleIndex(int index) {
+        int visible = 0;
+        for (int i = 0; i < index; i++) {
+            if (!isInternalKey(keys[i]))
+                visible++;
+        }
+        return visible;
+    }
+
     private int indexOfKeyIgnoreCase(String key) {
         Validate.notNull(key);
         for (int i = 0; i < size; i++) {
-            if (key.equalsIgnoreCase(keys[i]))
+            if (equalsIgnoreAsciiCase(key, keys[i]))
                 return i;
         }
         return NotFound;
@@ -144,7 +174,7 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
     // we track boolean attributes as null in values - they're just keys. so returns empty for consumers
     // casts to String, so only for non-internal attributes
     static String checkNotNull(@Nullable Object val) {
-        return val == null ? EmptyString : (String) val;
+        return val instanceof String ? (String) val : EmptyString;
     }
 
     /**
@@ -270,6 +300,38 @@ public class Attributes implements Iterable<Attribute>, Cloneable, NamedNodeMap 
         if (value == null)  userData.remove(key);
         else                userData.put(key, value);
         return this;
+    }
+
+    /**
+     Gets the range spans, if source tracking was used.
+     */
+    Range.@Nullable Spans spans() {
+        int i = indexOfKey(SharedConstants.RangeSpansKey);
+        return i == NotFound ? null : (Range.Spans) vals[i];
+    }
+
+    /**
+     Gets or creates the range spans for this attributes object.
+     */
+    Range.Spans ensureSpans() {
+        Range.Spans rangeSpans = spans();
+        if (rangeSpans == null) {
+            rangeSpans = new Range.Spans();
+            addObject(SharedConstants.RangeSpansKey, rangeSpans);
+        }
+        return rangeSpans;
+    }
+
+    /** Sets the leaf node's source ranges without discarding existing attribute ranges. */
+    void putSpans(Range.Spans rangeSpans) {
+        int i = indexOfKey(SharedConstants.RangeSpansKey);
+        if (i == NotFound) {
+            addObject(SharedConstants.RangeSpansKey, rangeSpans);
+        } else {
+            Range.Spans attributeSpans = (Range.Spans) vals[i];
+            rangeSpans.copyAttributeRanges(attributeSpans);
+            vals[i] = rangeSpans;
+        }
     }
 
     void putIgnoreCase(String key, @Nullable String value) {
