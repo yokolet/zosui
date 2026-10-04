@@ -283,7 +283,7 @@ public class NokoGumboTest {
         }
         //String[] expected  = {"html", "#comment", "html", "#comment"};
         //assertArrayEquals(expected, names);
-        String[] expected = {"html", "#comment", "html"};
+        String[] expected = {"html", "#comment", "html", "#comment"};
         assertArrayEquals(expected, names);
     }
     /*

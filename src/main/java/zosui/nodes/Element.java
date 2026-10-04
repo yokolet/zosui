@@ -260,7 +260,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     public boolean hasAttributes() {
         if (attributes == null || attributes.getLength() == 0) { return false; }
         if (attributes.getLength() > 1 ) { return true; }
-        int index = attributes.indexOfKey(SharedConstants.UserDataKey);
+        int index = attributes.indexOfKey(SharedConstants.RangeSpansKey);
         return index == -1;
     }
 

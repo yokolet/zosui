@@ -3,8 +3,8 @@ package zosui.nodes;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.w3c.dom.DOMException;
+
 import zosui.internal.QuietAppendable;
 import zosui.parser.Parser;
 

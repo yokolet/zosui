@@ -210,8 +210,8 @@ public class ApiTest {
         // the differences come from the parser
         String[] expected = {
                 "<pre>\nContent</pre>",
-                "<listing>Content</listing>",
-                "<textarea>\n\nContent</textarea>",
+                "<listing>\nContent</listing>",
+                "<textarea>\nContent</textarea>",
         };
         for (int i = 0; i < tags.length; i++) {
             String tag = tags[i];
