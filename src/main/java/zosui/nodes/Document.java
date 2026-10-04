@@ -18,6 +18,7 @@ import org.w3c.dom.Text;
 
 import zosui.helper.DataUtil;
 import zosui.helper.Validate;
+import zosui.internal.QuietAppendable;
 import zosui.parser.ParseErrorList;
 import zosui.parser.ParseSettings;
 import zosui.parser.Parser;
@@ -436,13 +437,19 @@ public class Document extends Element implements org.w3c.dom.Document {
                 parser.tagSet().valueOf(tagName, parser.defaultNamespace(), ParseSettings.preserveCase),
                 searchUpForAttribute(this, BaseUriKey)
         );
-        element.ownerDocument = this;
+        element.ownerDocument = this;  // org.w3c.dom
         return element;
     }
 
     @Override
     public String outerHtml() {
         return super.html(); // no outer wrapper tag
+    }
+
+    /** Append the HTML of this Document to the supplied {@link QuietAppendable}. */
+    @Override
+    protected void outerHtml(QuietAppendable accum) {
+        html(accum);
     }
 
     /**

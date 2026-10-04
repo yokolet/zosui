@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static zosui.nodes.Document.OutputSettings.Syntax.html;
 import static zosui.nodes.Document.OutputSettings.Syntax.xml;
 import static zosui.nodes.TextNode.lastCharIsWhitespace;
 import static zosui.parser.Parser.NamespaceHtml;
@@ -2116,6 +2117,11 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         // if empty, we have already closed in htmlHead
     }
 
+    /** Tests if this element is an HTML-namespace void tag. */
+    boolean isHtmlVoid() {
+        return tag.namespace().equals(NamespaceHtml) && tag.isEmpty();
+    }
+
     /* If XML syntax, normalizes < to _ in tag name. */
     @Nullable private String safeTagName(Document.OutputSettings.Syntax syntax) {
         return syntax == xml ? Normalizer.xmlSafeTagName(tagName()) : tagName();
@@ -2136,16 +2142,22 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     }
 
     @Override
-    public <T extends Appendable> T html(T accum) {
+    public <T extends Appendable> T html(T appendable) {
+        html(QuietAppendable.wrap(appendable));
+        return appendable;
+    }
+
+    /** Append the inner HTML of this element to the supplied {@link QuietAppendable}. */
+    void html(QuietAppendable accum) {
+        if (NodeUtils.outputSettings(this).syntax() == html && isHtmlVoid()) return;
         Node child = firstChild();
         if (child != null) {
-            Printer printer = Printer.printerFor(child, QuietAppendable.wrap(accum));
+            Printer printer = Printer.printerFor(child, accum);
             while (child != null) {
                 printer.traverse(child);
                 child = child.nextSibling();
             }
         }
-        return accum;
     }
 
     /**

@@ -3,7 +3,6 @@ package zosui.nodes;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
 
 import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
@@ -117,8 +116,15 @@ public class DocumentType extends LeafNode implements org.w3c.dom.DocumentType {
             accum.append(" ").append(attr(PubSysKey));
         if (has(PublicId))
             accum.append(" \"").append(attr(PublicId)).append('"');
-        if (has(SystemId))
-            accum.append(" \"").append(attr(SystemId)).append('"');
+        if (has(SystemId)) {
+            String systemId = attr(SystemId);
+            // system IDs can contain quotes; keep the value unchanged and use the other delimiter
+            // https://www.w3.org/TR/xml/#sec-external-ent
+            char quote = systemId.indexOf('"') >= 0 ? '\'' : '"';
+            accum.append(' ').append(quote).append(systemId).append(quote);
+        }
+        if (attributes().hasKey(InternalSubsetKey)) // only if via the xml parser; html parser will drop
+            accum.append(" [").append(attr(InternalSubsetKey)).append(']');
         accum.append('>');
     }
 
