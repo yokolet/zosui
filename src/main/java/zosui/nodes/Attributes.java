@@ -1,16 +1,5 @@
 package zosui.nodes;
 
-import zosui.helper.Validate;
-import zosui.internal.QuietAppendable;
-import zosui.internal.SharedConstants;
-import zosui.internal.StringUtil;
-import zosui.nodes.Document.OutputSettings.Syntax;
-import zosui.parser.ParseSettings;
-
-import org.jspecify.annotations.Nullable;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
-
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -25,6 +14,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+
+import org.jspecify.annotations.Nullable;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+
+import zosui.helper.Validate;
+import zosui.internal.QuietAppendable;
+import zosui.internal.SharedConstants;
+import zosui.internal.StringUtil;
+import zosui.nodes.Document.OutputSettings.Syntax;
+import zosui.parser.ParseSettings;
 
 import static zosui.internal.Normalizer.asciiLowerCase;
 import static zosui.internal.Normalizer.equalsIgnoreAsciiCase;

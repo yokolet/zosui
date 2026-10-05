@@ -1,11 +1,11 @@
 package zosui.nodes;
 
-import zosui.helper.Validate;
-import zosui.internal.Normalizer;
-import zosui.internal.QuietAppendable;
-import zosui.internal.SharedConstants;
-import zosui.internal.StringUtil;
-import zosui.nodes.Document.OutputSettings.Syntax;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Attr;
@@ -16,14 +16,12 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
+import zosui.helper.Validate;
+import zosui.internal.Normalizer;
+import zosui.internal.QuietAppendable;
+import zosui.internal.SharedConstants;
+import zosui.internal.StringUtil;
+import zosui.nodes.Document.OutputSettings.Syntax;
 
 /**
  A single key + value attribute. (Only used for presentation.)

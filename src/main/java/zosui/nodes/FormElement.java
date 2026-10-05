@@ -1,9 +1,9 @@
 package zosui.nodes;
 
-import zosui.parser.Tag;
-import zosui.select.Elements;
 import org.jspecify.annotations.Nullable;
 
+import zosui.parser.Tag;
+import zosui.select.Elements;
 
 /**
  * An HTML Form Element provides ready access to the form fields/controls that are associated with it. It also allows a

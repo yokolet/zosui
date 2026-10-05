@@ -1,22 +1,5 @@
 package zosui.nodes;
 
-import org.w3c.dom.*;
-import zosui.helper.Validate;
-import zosui.internal.Normalizer;
-import zosui.internal.QuietAppendable;
-import zosui.internal.SharedConstants;
-import zosui.internal.StringUtil;
-import zosui.parser.ParseSettings;
-import zosui.parser.Parser;
-import zosui.parser.Tag;
-import zosui.select.Collector;
-import zosui.select.Elements;
-import zosui.select.Evaluator;
-import zosui.select.NodeFilter;
-import zosui.select.NodeVisitor;
-
-import org.jspecify.annotations.Nullable;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +16,26 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.TypeInfo;
+
+import zosui.helper.Validate;
+import zosui.internal.QuietAppendable;
+import zosui.internal.SharedConstants;
+import zosui.internal.StringUtil;
+import zosui.parser.ParseSettings;
+import zosui.parser.Parser;
+import zosui.parser.Tag;
+import zosui.select.Collector;
+import zosui.select.Elements;
+import zosui.select.Evaluator;
+import zosui.select.NodeFilter;
+import zosui.select.NodeVisitor;
+
+import static zosui.internal.Normalizer.asciiLowerCase;
 import static zosui.nodes.Document.OutputSettings.Syntax.html;
 import static zosui.nodes.Document.OutputSettings.Syntax.xml;
 import static zosui.nodes.TextNode.lastCharIsWhitespace;
@@ -1141,6 +1144,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     public Element append(String html) {
         Validate.notNull(html);
         List<Node> nodes = NodeUtils.parser(this).parseFragmentInput(html, this, baseUri());
+        // org.w3c.dom
         for (Node node : nodes) {
             if (node instanceof Element && ((Element) node).noNamespace) {
                 ((Element) node).tag().namespace(tag.namespace());
@@ -1431,14 +1435,15 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      */
     public Elements getElementsByTag(String tagName) {
         Validate.notEmpty(tagName);
-        tagName = Normalizer.normalize(tagName);
+        tagName = asciiLowerCase(StringUtil.trimAsciiWhitespace(tagName));
 
         return Collector.collect(new Evaluator.Tag(tagName), this);
     }
 
+    // org.w3c.dom
     public Elements getElementsByNamespaceAndTag(String namespace, String tagName) {
         Validate.notEmpty(tagName);
-        tagName = Normalizer.normalize(tagName);
+        tagName = asciiLowerCase(StringUtil.trimAsciiWhitespace(tagName));
         Elements elements = Collector.collect(new Evaluator.NamespaceAndTag(namespace, tagName), this);
         if (!elements.isEmpty() && elements.getFirst() == this) { elements.deselect(0); }
         return elements;
@@ -1697,7 +1702,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      *
      * @return all elements
      */
-    public Elements getAllElementsExceptSelf() {
+    public Elements getAllElementsExceptSelf() {  // org.w3c.dom
         Elements allElements = Collector.collect(new Evaluator.AllElements(), this);
         allElements.deselect(0);
         return allElements;
@@ -1738,9 +1743,8 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
                 appendNormalisedText(accum, textNode);
             } else if (node instanceof Element) {
                 Element element = (Element) node;
-                if (accum.length() > 0 &&
-                    (element.isBlock() || element.nameIs("br")) &&
-                    !lastCharIsWhitespace(accum))
+                // add a synthetic space before leading blocks and readable boundaries when text would otherwise run together
+                if (accum.length() > 0 && needsLeadingTextSeparator(element) && !lastCharIsWhitespace(accum))
                     accum.append(' ');
             }
         }
@@ -1750,10 +1754,36 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
             if (node instanceof Element) {
                 Element element = (Element) node;
                 Node next = node.nextSibling();
-                if (!element.tag.isInline() && (next instanceof TextNode || next instanceof Element && ((Element) next).tag.isInline()) && !lastCharIsWhitespace(accum))
+                if (needsTrailingTextSeparator(element) &&
+                        (next instanceof TextNode || next instanceof Element && ((Element) next).tag.isInline()) &&
+                        !lastCharIsWhitespace(accum))
                     accum.append(' ');
             }
 
+        }
+
+        /** check if an element should separate preceding text during text() */
+        private static boolean needsLeadingTextSeparator(Element element) {
+            return element.isBlock()
+                    || element.nameIs("br")
+                    || element.tag.is(Tag.TextBoundary) && element.childNodeSize() > 0 && element.hasText();
+        }
+
+        /** check if an element should separate following text during text() */
+        private static boolean needsTrailingTextSeparator(Element element) {
+            return element.tag.is(Tag.TextBoundary)
+                    || !element.tag.isInline()
+                    || hasBlockChild(element);
+        }
+
+        /** check if an inline wrapper contains direct block children and should close with a separator */
+        private static boolean hasBlockChild(Element element) {
+            for (int i = 0; i < element.childNodeSize(); i++) {
+                Node child = element.childNode(i);
+                if (child instanceof Element && ((Element) child).isBlock())
+                    return true;
+            }
+            return false;
         }
     }
 
@@ -2096,11 +2126,12 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         accum.append('<').append(tagName);
         if (attributes != null) attributes.html(accum, out);
 
-        if (childNodes.isEmpty()) {
+        boolean htmlVoid = out.syntax() == html && isHtmlVoid();
+        if (childNodes.isEmpty() || htmlVoid) {
             boolean xmlMode = out.syntax() == xml || !tag.namespace().equals(NamespaceHtml);
             if (xmlMode && (tag.is(Tag.SeenSelfClose) || (tag.isKnownTag() && (tag.isEmpty() || tag.isSelfClosing())))) {
                 accum.append(" />");
-            } else if (!xmlMode && tag.isEmpty()) { // html void element
+            } else if (htmlVoid) {
                 accum.append('>');
             } else {
                 accum.append("></").append(tagName).append('>');
@@ -2124,7 +2155,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
 
     /* If XML syntax, normalizes < to _ in tag name. */
     @Nullable private String safeTagName(Document.OutputSettings.Syntax syntax) {
-        return syntax == xml ? Normalizer.xmlSafeTagName(tagName()) : tagName();
+        return syntax == xml ? Attribute.getValidKey(tagName(), xml) : tagName();
     }
 
     /**

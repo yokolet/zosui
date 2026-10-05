@@ -1,14 +1,19 @@
 package zosui.nodes;
 
+import org.jspecify.annotations.Nullable;
+
 import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
 import zosui.nodes.Document.OutputSettings;
 import zosui.parser.Tag;
-import zosui.select.NodeVisitor;
-import org.jspecify.annotations.Nullable;
+import zosui.select.NodeFilter;
+
+import static zosui.nodes.Document.OutputSettings.Syntax.html;
+import static zosui.parser.Parser.NamespaceHtml;
+
 
 /** Base Printer */
-class Printer implements NodeVisitor {
+class Printer implements NodeFilter {
     final Node root;
     final QuietAppendable accum;
     final OutputSettings settings;
@@ -21,7 +26,17 @@ class Printer implements NodeVisitor {
 
     void addHead(Element el, int depth) {
         el.outerHtmlHead(accum, settings);
+        // HTML consumes one initial newline; supply LF so preserved LF or CR text survives a reparse
+        if (settings.syntax() == html && el.tag().namespace().equals(NamespaceHtml)
+                && StringUtil.in(el.normalName(), InitialNewlineTags)
+                && el.firstChild() instanceof TextNode) {
+            String text = ((TextNode) el.firstChild()).getWholeText();
+            if (text.startsWith("\n") || text.startsWith("\r"))
+                accum.append('\n');
+        }
     }
+
+    private static final String[] InitialNewlineTags = {"pre", "listing", "textarea"};
 
     void addTail(Element el, int depth) {
         el.outerHtmlTail(accum, settings);
@@ -41,17 +56,19 @@ class Printer implements NodeVisitor {
     }
 
     @Override
-    public void head(Node node, int depth) {
+    public FilterResult head(Node node, int depth) {
         if (node.getClass() == TextNode.class)  addText((TextNode) node, 0, depth); // Excludes CData; falls to addNode
         else if (node instanceof Element)       addHead((Element) node, depth);
         else                                    addNode((LeafNode) node, depth);
+
+        return node instanceof Element && settings.syntax() == html && ((Element) node).isHtmlVoid()
+                ? FilterResult.SKIP_ENTIRELY : FilterResult.CONTINUE; // skip any children in void tags
     }
 
     @Override
-    public void tail(Node node, int depth) {
-        if (node instanceof Element) { // otherwise a LeafNode
-            addTail((Element) node, depth);
-        }
+    public FilterResult tail(Node node, int depth) {
+        if (node instanceof Element) addTail((Element) node, depth); // otherwise a LeafNode
+        return FilterResult.CONTINUE;
     }
 
     /** Pretty Printer */

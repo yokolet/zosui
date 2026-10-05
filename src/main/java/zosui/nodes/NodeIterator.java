@@ -1,10 +1,11 @@
 package zosui.nodes;
 
-import zosui.helper.Validate;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import org.jspecify.annotations.Nullable;
+
+import zosui.helper.Validate;
 
 /**
  Iterate through a Node and its tree of descendants, in document order, and returns nodes of the specified type. This

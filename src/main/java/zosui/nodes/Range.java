@@ -1,10 +1,10 @@
 package zosui.nodes;
 
-import zosui.internal.LineMap;
-import zosui.internal.StringUtil;
-
 import java.util.Arrays;
 import java.util.Objects;
+
+import zosui.internal.LineMap;
+import zosui.internal.StringUtil;
 
 /**
  A Range tracks the source offsets where a Node starts or ends. Line and column coordinates are derived from the

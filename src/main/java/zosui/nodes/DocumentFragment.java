@@ -1,10 +1,6 @@
 package zosui.nodes;
 
 import org.w3c.dom.NamedNodeMap;
-import zosui.parser.*;
-
-import java.util.List;
-import java.util.Map;
 
 public class DocumentFragment extends Element implements org.w3c.dom.DocumentFragment {
     public DocumentFragment() {

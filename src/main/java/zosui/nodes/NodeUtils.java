@@ -1,13 +1,13 @@
 package zosui.nodes;
 
-import zosui.parser.HtmlTreeBuilder;
-import zosui.parser.Parser;
-
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import zosui.parser.HtmlTreeBuilder;
+import zosui.parser.Parser;
 
 /**
  * Internal helpers for Nodes, to keep the actual node APIs relatively clean. A jsoup internal class, so don't use it as
