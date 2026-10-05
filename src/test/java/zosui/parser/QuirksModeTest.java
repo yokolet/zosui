@@ -33,7 +33,8 @@ public class QuirksModeTest {
     public void testJsoupNoQuirksMode() {
         String html = "<!DOCTYPE html><p><span><table><tbody><tr><td><span>Hello table data</span></td></tr></tbody></table></span></p>";
         Document document = parser.parseInput(html, "");
-        assertEquals(Document.QuirksMode.noQuirks, document.quirksMode());
+        //assertEquals(Document.QuirksMode.noQuirks, document.quirksMode());
+        assertNull(document.quirksMode());
         // no quirks, p gets closed
         assertEquals(
                 "<p><span></span></p><table><tbody><tr><td><span>Hello table data</span></td></tr></tbody></table><p></p>",

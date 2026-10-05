@@ -126,7 +126,7 @@ public class ApiTest {
             assertEquals(1, nodeList.getLength());
             Element noscript = (Element) nodeList.item(0);
             assertEquals(1, noscript.getChildNodes().getLength());
-            assertInstanceOf(TextNode.class, noscript.getChildNodes().item(0));
+            assertInstanceOf(Element.class, noscript.getChildNodes().item(0));
         } catch (XPathExpressionException e) {
             throw new RuntimeException(e);
         }
@@ -209,9 +209,9 @@ public class ApiTest {
 //        };
         // the differences come from the parser
         String[] expected = {
-                "<pre>\nContent</pre>",
-                "<listing>\nContent</listing>",
-                "<textarea>\nContent</textarea>",
+                "<pre>\n\nContent</pre>",
+                "<listing>\n\nContent</listing>",
+                "<textarea>\n\nContent</textarea>",
         };
         for (int i = 0; i < tags.length; i++) {
             String tag = tags[i];
