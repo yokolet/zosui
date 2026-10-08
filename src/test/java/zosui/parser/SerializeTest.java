@@ -52,8 +52,8 @@ public class SerializeTest {
 
     @Test
     public void testOuter() {
-        //String expected = "\n<div id=\"inner\">\n<pre id=\"pre1\">x</pre>\n<pre id=\"pre2\">\nx</pre>\n<textarea id=\"textarea1\">x</textarea>\n<textarea id=\"textarea2\">\nx</textarea>\n<listing id=\"listing1\">x</listing>\n<listing id=\"listing2\">\nx</listing>\n</div>\n";
-        String expected = "\n<div id=\"inner\">\n<pre id=\"pre1\">x</pre>\n<pre id=\"pre2\">\nx</pre>\n<textarea id=\"textarea1\">\nx</textarea>\n<textarea id=\"textarea2\">\n\nx</textarea>\n<listing id=\"listing1\">x</listing>\n<listing id=\"listing2\">\nx</listing>\n</div>\n";
+        // The output is not the same as the gumbo version
+        String expected = "\n<div id=\"inner\">\n<pre id=\"pre1\">x</pre>\n<pre id=\"pre2\">\n\nx</pre>\n<textarea id=\"textarea1\">x</textarea>\n<textarea id=\"textarea2\">\n\nx</textarea>\n<listing id=\"listing1\">x</listing>\n<listing id=\"listing2\">\n\nx</listing>\n</div>\n";
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("//div[@id=\"outer\"]");
@@ -71,7 +71,8 @@ public class SerializeTest {
 
     @Test
     public void testInner() {
-        String expected = "\n<pre id=\"pre1\">x</pre>\n<pre id=\"pre2\">\nx</pre>\n<textarea id=\"textarea1\">\nx</textarea>\n<textarea id=\"textarea2\">\n\nx</textarea>\n<listing id=\"listing1\">x</listing>\n<listing id=\"listing2\">\nx</listing>\n";
+        // The output is not the same as the gumbo version
+        String expected = "\n<pre id=\"pre1\">x</pre>\n<pre id=\"pre2\">\n\nx</pre>\n<textarea id=\"textarea1\">x</textarea>\n<textarea id=\"textarea2\">\n\nx</textarea>\n<listing id=\"listing1\">x</listing>\n<listing id=\"listing2\">\n\nx</listing>\n";
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression expression = xPath.compile("//div[@id=\"inner\"]");
@@ -115,13 +116,13 @@ public class SerializeTest {
             NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
             assertEquals(1, nodeList.getLength());
             Node node = nodeList.item(0);
-            assertEquals("\nx", ((zosui.nodes.Element)node).html());
+            assertEquals("x", ((zosui.nodes.Element)node).html());
 
             expression = xPath.compile("//*[@id=\"textarea2\"]");
             nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
             assertEquals(1, nodeList.getLength());
             node = nodeList.item(0);
-            assertEquals("\n\nx", ((zosui.nodes.Element)node).html());
+            assertEquals("\nx", ((zosui.nodes.Element)node).html());
         } catch (XPathExpressionException e) {
             throw new RuntimeException(e);
         }

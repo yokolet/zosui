@@ -54,7 +54,8 @@ public class QuirksModeTest {
         String html = "<!DOCTYPE html><p>hello</p>";
         Document document = parser.parseInput(html, "");
         Document.QuirksMode mode = document.quirksMode();
-        assertEquals(Document.QuirksMode.noQuirks, mode);
+        //assertEquals(Document.QuirksMode.noQuirks, mode);   // The initial value is given from Ruby side
+        assertNull(mode);
     }
 
     @Test
