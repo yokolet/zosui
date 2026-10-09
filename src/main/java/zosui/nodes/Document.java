@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
@@ -19,6 +18,7 @@ import org.w3c.dom.Text;
 import zosui.helper.DataUtil;
 import zosui.helper.Validate;
 import zosui.internal.QuietAppendable;
+import zosui.internal.StringUtil;
 import zosui.parser.ParseErrorList;
 import zosui.parser.ParseSettings;
 import zosui.parser.Parser;
@@ -30,7 +30,7 @@ import zosui.select.Evaluator;
 import static zosui.parser.Parser.NamespaceHtml;
 
 /**
- A HTML Document.
+ An HTML Document.
 
  @author Jonathan Hedley, jonathan@hedley.net */
 public class Document extends Element implements org.w3c.dom.Document {
@@ -86,10 +86,10 @@ public class Document extends Element implements org.w3c.dom.Document {
     public static class DocImpl implements DOMImplementation {
         @Override public boolean hasFeature(String feature, String version) { return false; }
         @Override public DocumentType createDocumentType(String qualifiedName, String publicId, String systemId) throws DOMException {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createDocumentType will be implemented later");
         }
         @Override public Document createDocument(String namespaceURI, String qualifiedName, org.w3c.dom.DocumentType doctype) throws DOMException {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createDocument will be implemented later");
         }
         @Override public Object getFeature(String feature, String version) { return null; }
     }
@@ -103,7 +103,7 @@ public class Document extends Element implements org.w3c.dom.Document {
             @Override public boolean contains(String str) { return false; }
         };
         @Override public void setParameter(String name, Object value) throws DOMException {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented later");
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's setParameter method will be implemented later");
         }
         @Override public Object getParameter(String name) throws DOMException { return null; }
         @Override public boolean canSetParameter(String name, Object value) { return false; }
@@ -153,19 +153,22 @@ public class Document extends Element implements org.w3c.dom.Document {
         return node;
     }
     @Override public Comment createComment(String data) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        Comment node = new Comment(data);
+        node.ownerDocument = this;
+        node.setBaseUri(baseUri());
+        return node;
     }
     @Override public CDATASection createCDATASection(String data) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createCDATASection will be implemented");
     }
     @Override public ProcessingInstruction createProcessingInstruction(String target, String data) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createProcessingInstruction will be implemented");
     }
     @Override public Attr createAttribute(String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createAttribute will be implemented");
     }
     @Override public EntityReference createEntityReference(String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createEntityReference will be implemented");
     }
     @Override public org.w3c.dom.NodeList getElementsByTagName(String name) {
         if (!name.equals("*")) { return getElementsByTag(name); }
@@ -174,13 +177,13 @@ public class Document extends Element implements org.w3c.dom.Document {
         return Collector.collect(new Evaluator.AllElements(), element);
     }
     @Override public Node importNode(org.w3c.dom.Node importNode, boolean deep) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's importNode will be implemented");
     }
     @Override public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createElementNS will be implemented");
     }
     @Override public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Will be implemented");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Document's createAttributeNS will be implemented");
     }
     @Override public org.w3c.dom.NodeList getElementsByTagNameNS(String namespaceURI, String localName) throws DOMException {
         return getElementsByTagName(localName);
@@ -407,11 +410,11 @@ public class Document extends Element implements org.w3c.dom.Document {
      Get the string contents of the document's {@code title} element.
      @return Trimmed title, or empty string if none set.
      */
-//    public String title() {
-//        // title is a preserve whitespace tag (for document output), but normalised here
-//        Element titleEl = head().selectFirst(titleEval);
-//        return titleEl != null ? StringUtil.normaliseWhitespace(titleEl.text()).trim() : "";
-//    }
+    public String title() {
+        // title is a preserve whitespace tag (for document output), but normalised here
+        Element titleEl = head().selectFirst(titleEval);
+        return titleEl != null ? StringUtil.normaliseWhitespace(titleEl.text()).trim() : "";
+    }
     private static final Evaluator titleEval = new Evaluator.Tag("title");
 
     /**
