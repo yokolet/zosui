@@ -241,7 +241,8 @@ public class Attribute implements Cloneable, Attr  {
      Set the attribute key; case is preserved.
      @param key the new key; must not be null
      */
-    public void setKey(String key) {        Validate.notNull(key);
+    public void setKey(String key) {
+        Validate.notNull(key);
         key = StringUtil.trimAsciiWhitespace(key);
         Validate.notEmpty(key); // trimming could potentially make empty, so validate here
         if (parent != null) {

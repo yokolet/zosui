@@ -219,13 +219,14 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
     }
 
     private Element wrapElement(org.w3c.dom.Element element) {
-        Tag tag = new Tag(element.getTagName(), element.getNamespaceURI() == null ? "" : element.getNamespaceURI());
+        String namespaceURI = element.getNamespaceURI();
+        Tag tag = new Tag(element.getTagName(), namespaceURI == null ? NamespaceHtml : namespaceURI);
         NamedNodeMap attrs = element.getAttributes();
         Attributes attributes = new Attributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             attributes.add(attrs.item(i).getNodeName(), attrs.item(i).getNodeValue());
         }
-        Element wrappedElement = new Element(tag, element.getBaseURI(), attributes);
+        Element wrappedElement = new Element(tag, element.getBaseURI() == null ? "" : element.getBaseURI(), attributes);
         wrappedElement.foreignNode = element;
         return wrappedElement;
     }
@@ -735,9 +736,9 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      * @return the first matching element (walking down the tree, starting from this element), or {@code null} if none
      * match.
      */
-//    public @Nullable Element selectFirst(Evaluator evaluator) {
-//        return Collector.findFirst(evaluator, this);
-//    }
+    public @Nullable Element selectFirst(Evaluator evaluator) {
+        return Collector.findFirst(evaluator, this);
+    }
 
     /**
      Just like {@link #selectFirst(String)}, but if there is no match, throws an {@link IllegalArgumentException}. This
