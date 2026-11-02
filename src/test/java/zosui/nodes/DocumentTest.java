@@ -329,4 +329,47 @@ public class DocumentTest {
         assertNull(textNode.getParentNode());
         assertEquals(0, aNode.getChildNodes().getLength());
     }
+
+    @Test
+    public void testRenameNode() {
+        Document base = parser.parseInput(html, "");
+        Node body = base.getElementsByTagName("body").item(0);
+        assertEquals("div", body.getFirstChild().getNodeName());
+        NodeList list = base.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        Node node = list.item(0);
+        Node renamed = base.renameNode(node, null, "p");
+        assertEquals("p", body.getFirstChild().getNodeName());
+        assertEquals(node, renamed);
+        assertEquals("a", renamed.getFirstChild().getNodeName());
+    }
+
+    @Test
+    public void testRenameNodeWithNamespace() {
+        Document base = parser.parseInput(html, "");
+        Node body = base.getElementsByTagName("body").item(0);
+        assertEquals("div", body.getFirstChild().getNodeName());
+        NodeList list = base.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        Node node = list.item(0);
+        Node renamed = base.renameNode(node, "http://www.w3.org/1998/Math/MathML", "math");
+        assertEquals("math", body.getFirstChild().getNodeName());
+        assertNotEquals(node, renamed);
+        assertEquals("a", renamed.getFirstChild().getNodeName());
+    }
+
+    @Test
+    public void testRenameAttribute() {
+        String str = "<html><head></head><body id=\"myBody\"><div class=\"baz\"><img src=\"example.jpg\" alt=\"An example image\" width=\"300\" /><a href=\"foo\" class=\"bar\">first</a></div></body></html>";
+        Document base = parser.parseInput(str, "");
+        Node div = base.getElementsByTagName("div").item(0);
+        assertEquals(2, div.getChildNodes().getLength());
+        Node img = div.getFirstChild();
+        NamedNodeMap attributes = img.getAttributes();
+        assertEquals(3, attributes.getLength());
+        Attr attribute = (Attr) attributes.getNamedItem("width");
+        Node renamed = base.renameNode(attribute, null, "height");
+        assertInstanceOf(Attr.class, img.getAttributes().getNamedItem("height"));
+        assertEquals(img, ((Attr)renamed).getOwnerElement());
+    }
 }
