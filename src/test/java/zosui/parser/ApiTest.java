@@ -298,7 +298,7 @@ public class ApiTest {
     }
 
     @Test
-    public void testFragmentWithAnnotationXmlContext() {
+    public void testAnnotationChild() {
         Document document = Parser.parse("<!DOCTYPE html><math><annotation-xml encoding='MathML-Presentation' /></math>", "");
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
@@ -319,7 +319,41 @@ public class ApiTest {
             Element mi = (Element) annotation.getElementsByTagName("mi").item(0);
             assertEquals("mi", mi.getLocalName());
             assertEquals(Parser.NamespaceMathml, mi.getNamespaceURI());
-            assertEquals(null, mi.getPrefix());
+            assertEquals("math", mi.getPrefix());
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testFragmentWithAnnotationXmlContext() {
+        Document document = Parser.parse("<!DOCTYPE html><math><annotation-xml encoding='MathML-Presentation' /></math>", "");
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            xPath.setNamespaceContext(new NamespaceContext() {
+                @Override public Iterator getPrefixes(String prefix) { return null; }
+                @Override public String getPrefix(String namespaceURI) { return null; }
+                @Override public String getNamespaceURI(String prefix) {
+                    if ("math".equals(prefix)) { return "http://www.w3.org/1998/Math/MathML"; }
+                    return XMLConstants.NULL_NS_URI;
+                }
+            });
+            XPathExpression expression = xPath.compile("//math:annotation-xml");
+            NodeList nodeList = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            assertEquals(1, nodeList.getLength());
+            assertEquals("annotation-xml", nodeList.item(0).getNodeName());
+            zosui.nodes.Element annotation = (zosui.nodes.Element) nodeList.item(0);
+
+            List<zosui.nodes.Node> nodes = Parser.parseFragment("<mi>x</mi>", annotation, "");
+            zosui.nodes.Node tempRoot = nodes.get(0);
+            org.w3c.dom.Node adopted = document.adoptNode(tempRoot);
+            zosui.nodes.DocumentFragment documentFragment = (zosui.nodes.DocumentFragment) document.createDocumentFragment();
+            documentFragment.appendChild(adopted);
+
+            Element mi = (Element) documentFragment.getChildNodes().item(0);
+            assertEquals("mi", mi.getLocalName());
+            assertEquals(Parser.NamespaceMathml, mi.getNamespaceURI());
+            assertEquals("math", mi.getPrefix());
         } catch (XPathExpressionException e) {
             throw new RuntimeException(e);
         }
