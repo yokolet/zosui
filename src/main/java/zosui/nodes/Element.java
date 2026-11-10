@@ -40,6 +40,8 @@ import static zosui.nodes.Document.OutputSettings.Syntax.html;
 import static zosui.nodes.Document.OutputSettings.Syntax.xml;
 import static zosui.nodes.TextNode.lastCharIsWhitespace;
 import static zosui.parser.Parser.NamespaceHtml;
+import static zosui.parser.Parser.NamespaceMathml;
+import static zosui.parser.Parser.NamespaceSvg;
 
 /**
  An HTML Element consists of a tag name, attributes, and child nodes (including text nodes and other elements).
@@ -135,7 +137,12 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
         if (noNamespace && tag.namespace().equals(NamespaceHtml)) { return null; }
         else { return tag.namespace(); }
     }
-    @Override public String getPrefix() { return noNamespace ? null : tag.prefix(); }
+    @Override public String getPrefix() {
+        if (tag.namespace().equals(NamespaceMathml)) { return "math"; }
+        else if (tag.namespace().equals(NamespaceSvg)) { return "svg"; }
+        else if (noNamespace) { return null; }
+        else { return tag.prefix(); }
+    }
     @Override public String getLocalName() { return tag.localName(); }
     @Override public String getBaseURI() { return baseUri().equals("") ? null : baseUri().trim(); }
     @Override public String getTextContent() throws DOMException { return text(); }
