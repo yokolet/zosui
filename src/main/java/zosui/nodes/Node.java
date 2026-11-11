@@ -16,6 +16,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.UserDataHandler;
 
+import zosui.helper.Html5Util;
 import zosui.helper.Validate;
 import zosui.internal.QuietAppendable;
 import zosui.internal.StringUtil;
@@ -635,8 +636,10 @@ public abstract class Node implements org.w3c.dom.Node, Cloneable {
 
         Element wrap = (Element) wrapNode;
         Element deepest = getDeepChild(wrap);
-        if (parentNode != null)
+        if (parentNode != null) {
+            Html5Util.isValidToAppend(parentNode, wrap);
             parentNode.replaceChildInner(this, wrap);
+        }
         deepest.addChildren(this); // side effect of tricking wrapChildren to lose first
 
         // remainder (unbalanced wrap, like <div></div><p></p> -- The <p> is remainder

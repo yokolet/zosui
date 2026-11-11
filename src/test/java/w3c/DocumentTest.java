@@ -369,4 +369,68 @@ public class DocumentTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    public void testRenameNode() {
+        try {
+            InputSource inputSource = new InputSource(new StringReader(html));
+            Document base = builder.parse(inputSource);
+            Node body = base.getElementsByTagName("body").item(0);
+            assertEquals("div", body.getFirstChild().getNodeName());
+            NodeList list = base.getElementsByTagName("div");
+            assertEquals(1, list.getLength());
+            Node node = list.item(0);
+            Node renamed = base.renameNode(node, null, "p");
+            assertEquals("p", body.getFirstChild().getNodeName());
+            assertEquals(node, renamed);
+            assertEquals("a", renamed.getFirstChild().getNodeName());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testRenameNodeWithNamespace() {
+        try {
+            InputSource inputSource = new InputSource(new StringReader(html));
+            Document base = builder.parse(inputSource);
+            Node body = base.getElementsByTagName("body").item(0);
+            assertEquals("div", body.getFirstChild().getNodeName());
+            NodeList list = base.getElementsByTagName("div");
+            assertEquals(1, list.getLength());
+            Node node = list.item(0);
+            Node renamed = base.renameNode(node, "http://www.w3.org/1998/Math/MathML", "math");
+            assertEquals("math", body.getFirstChild().getNodeName());
+            assertNotEquals(node, renamed);
+            assertEquals("a", renamed.getFirstChild().getNodeName());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testRenameAttribute() {
+        String str = "<html><head></head><body id=\"myBody\"><div class=\"baz\"><img src=\"example.jpg\" alt=\"An example image\" width=\"300\" /><a href=\"foo\" class=\"bar\">first</a></div></body></html>";
+        try {
+            InputSource inputSource = new InputSource(new StringReader(str));
+            Document base = builder.parse(inputSource);
+            Node div = base.getElementsByTagName("div").item(0);
+            assertEquals(2, div.getChildNodes().getLength());
+            Node img = div.getFirstChild();
+            NamedNodeMap attributes = img.getAttributes();
+            assertEquals(3, attributes.getLength());
+            Attr attribute = (Attr) attributes.getNamedItem("width");
+            Node renamed = base.renameNode(attribute, null, "height");
+            assertInstanceOf(Attr.class, img.getAttributes().getNamedItem("height"));
+            assertEquals(img, ((Attr)renamed).getOwnerElement());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

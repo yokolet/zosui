@@ -23,6 +23,13 @@ public class DocumentTest {
         document = parser.parseInput(html, "");
     }
 
+    private Parser getParser() {
+        Parser localParser = Parser.htmlParser();
+        localParser.setTrackPosition(true);
+        localParser.setTrackErrors(100);
+        return localParser;
+    }
+
     @Test
     public void testGetNodeName() {
         assertEquals("#document", document.getNodeName());
@@ -179,10 +186,11 @@ public class DocumentTest {
 
     @Test
     public void testUserData() {
-        document.setUserData("key", "value", null);
-        assertEquals("value", document.getUserData("key"));
-        document.setUserData("key", null, null);
-        assertNull(document.getUserData("key"));
+        Document base = getParser().parseInput(html, "");
+        base.setUserData("key", "value", null);
+        assertEquals("value", base.getUserData("key"));
+        base.setUserData("key", null, null);
+        assertNull(base.getUserData("key"));
     }
 
     @Test
@@ -260,15 +268,16 @@ public class DocumentTest {
 
     @Test
     public void testCreateElement() {
-        org.w3c.dom.Element element = document.createElement("div");
+        Document base = getParser().parseInput(html, "");
+        org.w3c.dom.Element element = base.createElement("div");
         assertEquals("div", element.getNodeName());
-        assertEquals(document, element.getOwnerDocument());
+        assertEquals(base, element.getOwnerDocument());
         assertNull(element.getParentNode());
     }
 
     @Test
     public void testAdoptNode() {
-        Document base = parser.parseInput(html, "");
+        Document base = getParser().parseInput(html, "");
         NodeList list = base.getElementsByTagName("div");
         assertEquals(1, list.getLength());
         Node divNode = list.item(0);
@@ -295,7 +304,7 @@ public class DocumentTest {
 
     @Test
     public void testAdoptAttr() {
-        Document base = parser.parseInput(html, "");
+        Document base = getParser().parseInput(html, "");
         NodeList list = base.getElementsByTagName("div");
         assertEquals(1, list.getLength());
         Node divNode = list.item(0);
@@ -314,7 +323,7 @@ public class DocumentTest {
 
     @Test
     public void testAdoptCharacterData() {
-        Document base = parser.parseInput(html, "");
+        Document base = getParser().parseInput(html, "");
         NodeList list = base.getElementsByTagName("a");
         assertEquals(1, list.getLength());
         Node aNode = list.item(0);
@@ -328,5 +337,48 @@ public class DocumentTest {
         assertEquals(another, textNode.getOwnerDocument());
         assertNull(textNode.getParentNode());
         assertEquals(0, aNode.getChildNodes().getLength());
+    }
+
+    @Test
+    public void testRenameNode() {
+        Document base = getParser().parseInput(html, "");
+        Node body = base.getElementsByTagName("body").item(0);
+        assertEquals("div", body.getFirstChild().getNodeName());
+        NodeList list = base.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        Node node = list.item(0);
+        Node renamed = base.renameNode(node, null, "p");
+        assertEquals("p", body.getFirstChild().getNodeName());
+        assertEquals(node, renamed);
+        assertEquals("a", renamed.getFirstChild().getNodeName());
+    }
+
+    @Test
+    public void testRenameNodeWithNamespace() {
+        Document base = getParser().parseInput(html, "");
+        Node body = base.getElementsByTagName("body").item(0);
+        assertEquals("div", body.getFirstChild().getNodeName());
+        NodeList list = base.getElementsByTagName("div");
+        assertEquals(1, list.getLength());
+        Node node = list.item(0);
+        Node renamed = base.renameNode(node, "http://www.w3.org/1998/Math/MathML", "math");
+        assertEquals("math", body.getFirstChild().getNodeName());
+        assertNotEquals(node, renamed);
+        assertEquals("a", renamed.getFirstChild().getNodeName());
+    }
+
+    @Test
+    public void testRenameAttribute() {
+        String str = "<html><head></head><body id=\"myBody\"><div class=\"baz\"><img src=\"example.jpg\" alt=\"An example image\" width=\"300\" /><a href=\"foo\" class=\"bar\">first</a></div></body></html>";
+        Document base = getParser().parseInput(str, "");
+        Node div = base.getElementsByTagName("div").item(0);
+        assertEquals(2, div.getChildNodes().getLength());
+        Node img = div.getFirstChild();
+        NamedNodeMap attributes = img.getAttributes();
+        assertEquals(3, attributes.getLength());
+        Attr attribute = (Attr) attributes.getNamedItem("width");
+        Node renamed = base.renameNode(attribute, null, "height");
+        assertInstanceOf(Attr.class, img.getAttributes().getNamedItem("height"));
+        assertEquals(img, ((Attr)renamed).getOwnerElement());
     }
 }
