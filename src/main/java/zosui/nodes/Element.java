@@ -22,6 +22,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.TypeInfo;
 
+import zosui.helper.Html5Util;
 import zosui.helper.Validate;
 import zosui.internal.QuietAppendable;
 import zosui.internal.SharedConstants;
@@ -971,6 +972,7 @@ public class Element extends Node implements Iterable<Element>, org.w3c.dom.Elem
      */
     public Element appendChild(Node child) {
         Validate.notNull(child);
+        Html5Util.isValidToAppend(this, child);
 
         // was - Node#addChildren(child). short-circuits an array create and a loop.
         reparentChild(child);

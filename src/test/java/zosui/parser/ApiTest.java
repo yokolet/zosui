@@ -358,4 +358,15 @@ public class ApiTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    public void testNodeWrapUsesParentNodeAsParsingContextNode() {
+        String str = "<html><body><select><option></option></select></body></html>";
+        Document document = Parser.parse(str, "");
+        Node optionNode = (Node) document.getElementsByTagName("option").item(0);
+        assertThrows(RuntimeException.class, () -> optionNode.wrap("<div></div>"));
+        Node wrappedSelect = optionNode.wrap("<optgroup></optgroup>");
+        assertEquals("optgroup", wrappedSelect.parentNode().getNodeName());
+        assertEquals("select", wrappedSelect.parentNode().parentNode().getNodeName());
+    }
 }
